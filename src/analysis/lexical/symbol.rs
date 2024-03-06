@@ -1,0 +1,22 @@
+#[derive(Debug)]
+pub enum Symbol {
+    Plus,
+    Minus,
+    Star,
+    Slash,
+    Equal,
+    EqualEqual,
+    Bang,
+    BangEqual,
+    Less,
+    LessEqual,
+    Greater,
+    GreaterEqual,
+    LeftParen,
+    RightParen,
+    Ampersand,
+    Pipe,
+    Comma,
+    Backslash,
+    Bullet,
+}
