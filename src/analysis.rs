@@ -1,2 +1,3 @@
+pub mod error;
 pub mod lexical;
-pub mod syntax_error;
+pub mod syntax;

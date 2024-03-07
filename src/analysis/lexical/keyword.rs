@@ -6,34 +6,32 @@ pub enum Keyword {
     If,
     /// なら
     Then,
-    /// もしくは
-    Elif,
     /// ちがえば
     Else,
     /// または
     Or,
     /// かつ
     And,
-    /// ではない
-    Not,
     /// 真
     True,
     /// 偽
     False,
     /// 無
-    Nil,
-    /// 関数
-    Func,
-    /// 戻す
+    Null,
+    /// しごと
+    Function,
+    /// かえす
     Return,
-    /// ループ
+    /// くりかえす
     Loop,
-    /// 次へ
+    /// つぎへ
     Continue,
-    /// 抜ける
+    /// ぬける
     Break,
-    /// ログ
-    Log,
+    /// 表示
+    Print,
+    /// 例外
+    Exception,
 }
 
 impl FromStr for Keyword {
@@ -43,20 +41,19 @@ impl FromStr for Keyword {
         match s {
             "もし" => Ok(Keyword::If),
             "なら" => Ok(Keyword::Then),
-            "もしくは" => Ok(Keyword::Elif),
             "ちがえば" => Ok(Keyword::Else),
             "または" => Ok(Keyword::Or),
             "かつ" => Ok(Keyword::And),
-            "ではない" => Ok(Keyword::Not),
             "真" => Ok(Keyword::True),
             "偽" => Ok(Keyword::False),
-            "無" => Ok(Keyword::Nil),
-            "関数" => Ok(Keyword::Func),
-            "戻す" => Ok(Keyword::Return),
-            "ループ" => Ok(Keyword::Loop),
-            "次へ" => Ok(Keyword::Continue),
-            "抜ける" => Ok(Keyword::Break),
-            "ログ" => Ok(Keyword::Log),
+            "無" => Ok(Keyword::Null),
+            "しごと" => Ok(Keyword::Function),
+            "かえす" => Ok(Keyword::Return),
+            "くりかえす" => Ok(Keyword::Loop),
+            "つぎへ" => Ok(Keyword::Continue),
+            "ぬける" => Ok(Keyword::Break),
+            "表示" => Ok(Keyword::Print),
+            "例外" => Ok(Keyword::Exception),
             _ => Err(()),
         }
     }
@@ -67,20 +64,19 @@ impl ToString for Keyword {
         match self {
             Keyword::If => "もし",
             Keyword::Then => "なら",
-            Keyword::Elif => "もしくは",
             Keyword::Else => "ちがえば",
             Keyword::Or => "または",
             Keyword::And => "かつ",
-            Keyword::Not => "ではない",
             Keyword::True => "真",
             Keyword::False => "偽",
-            Keyword::Nil => "無",
-            Keyword::Func => "関数",
-            Keyword::Return => "戻す",
-            Keyword::Loop => "ループ",
-            Keyword::Continue => "次へ",
-            Keyword::Break => "抜ける",
-            Keyword::Log => "ログ",
+            Keyword::Null => "無",
+            Keyword::Function => "しごと",
+            Keyword::Return => "かえす",
+            Keyword::Loop => "くりかえす",
+            Keyword::Continue => "つぎへ",
+            Keyword::Break => "ぬける",
+            Keyword::Print => "表示",
+            Keyword::Exception => "例外",
         }
         .to_string()
     }

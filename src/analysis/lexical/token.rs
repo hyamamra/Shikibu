@@ -76,4 +76,11 @@ impl Token {
             position,
         }
     }
+
+    pub fn invalid(c: char, position: usize) -> Token {
+        Token {
+            lexeme: Lexeme::Invalid(c),
+            position,
+        }
+    }
 }

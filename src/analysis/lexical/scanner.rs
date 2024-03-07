@@ -1,5 +1,5 @@
 use super::token::Token;
-use crate::analysis::lexical::symbol::Symbol;
+use crate::analysis::{error::SyntaxError, lexical::symbol::Symbol};
 
 pub struct Scanner {
     chars: Vec<char>,
@@ -15,11 +15,9 @@ impl Iterator for Scanner {
         };
 
         Some(match c {
-            '+' | '＋' | '-' | '－' | '*' | '＊' | '/' | '／' | '=' | '＝' | '!' | '！' | '<'
-            | '＜' | '>' | '＞' | '&' | '＆' | '|' | '｜' | '(' | '（' | ')' | '）' | '・'
-            | '\\' | '￥' => self.drain_symbol(),
+            x if x.is_symbol() => self.drain_symbol().unwrap(),
             '"' | '”' => self.drain_string(),
-            '1'..='9' | '１'..='９' => self.drain_number(),
+            '0'..='9' | '０'..='９' => self.drain_number(),
             ' ' | '　' | '\t' => self.drain_spaces_and_tabs(),
             '\r' | '\n' => self.drain_newline(),
             '#' | '＃' => self.drain_comment(),
@@ -50,12 +48,12 @@ impl Scanner {
         }
     }
 
-    fn drain_symbol(&mut self) -> Token {
+    fn drain_symbol(&mut self) -> Result<Token, SyntaxError> {
         let position = self.cursor;
         let c1 = self.next().unwrap();
         let c2 = self.peek().unwrap_or(&' ');
 
-        Token::symbol(
+        Ok(Token::symbol(
             match c1 {
                 '+' | '＋' => Symbol::Plus,
                 '-' | '－' => Symbol::Minus,
@@ -91,15 +89,12 @@ impl Scanner {
                 },
                 '(' | '（' => Symbol::LeftParen,
                 ')' | '）' => Symbol::RightParen,
-                '&' | '＆' => Symbol::Ampersand,
-                '|' | '｜' => Symbol::Pipe,
                 ',' | '，' | '、' => Symbol::Comma,
-                '\\' | '￥' => Symbol::Backslash,
-                '・' => Symbol::Bullet,
-                _ => panic!(),
+                '~' | '～' => Symbol::Tilde,
+                _ => return Err(SyntaxError::invalid_symbol(c1, position)),
             },
             position,
-        )
+        ))
     }
 
     fn drain_string(&mut self) -> Token {
@@ -126,12 +121,10 @@ impl Scanner {
 
     fn drain_digits_as_string(&mut self) -> String {
         let mut digits = String::new();
-
         while let Some(c) = self.peek() {
-            if c.is_single_or_multi_byte_digit() {
-                digits.push(self.next().unwrap());
-            } else {
-                break;
+            match c {
+                '0'..='9' | '０'..='９' => digits.push(self.next().unwrap()),
+                _ => break,
             }
         }
         digits
@@ -156,10 +149,11 @@ impl Scanner {
         let mut spaces = String::new();
 
         while let Some(c) = self.peek() {
-            if c.is_single_or_multi_byte_space_or_tab() {
-                spaces.push(self.next().unwrap());
-            } else {
-                break;
+            match c {
+                ' ' | '　' | '\t' => {
+                    spaces.push(self.next().unwrap());
+                }
+                _ => break,
             }
         }
         Token::spaces(spaces.len(), position)
@@ -174,10 +168,10 @@ impl Scanner {
         let position = self.cursor;
 
         while let Some(c) = self.peek() {
-            if c.is_newline() {
-                break;
+            match c {
+                '\r' | '\n' => break,
+                _ => _ = self.next().unwrap(),
             }
-            _ = self.next().unwrap();
         }
         Token::comment(position)
     }
@@ -187,10 +181,10 @@ impl Scanner {
         let mut identifier = String::new();
 
         while let Some(c) = self.peek() {
-            if c.is_special_symbol() || c.is_single_or_multi_byte_space_or_tab() || c.is_newline() {
-                break;
+            match c {
+                x if x.is_symbol() | x.is_special() => break,
+                _ => identifier.push(self.next().unwrap()),
             }
-            identifier.push(self.next().unwrap());
         }
         if let Ok(keyword) = identifier.parse() {
             Token::keyword(keyword, position)
@@ -200,56 +194,32 @@ impl Scanner {
     }
 }
 
-trait IsSpecialSymbol {
-    fn is_special_symbol(&self) -> bool;
+trait IsSymbol {
+    fn is_symbol(&self) -> bool;
 }
 
-impl IsSpecialSymbol for char {
-    fn is_special_symbol(&self) -> bool {
+impl IsSymbol for char {
+    fn is_symbol(&self) -> bool {
         match self {
-            '=' | '＝' | '+' | '＋' | '-' | '－' | '*' | '＊' | '/' | '／' | '!' | '！' | '<'
-            | '＜' | '>' | '＞' | '&' | '＆' | '|' | '｜' | '(' | '（' | ')' | '）' | '"' | '”'
-            | ' ' | '　' | '\t' | '\r' | '\n' | '#' | '＃' | ',' | '，' | '、' | '・' | '\\'
-            | '￥' => true,
+            '+' | '＋' | '-' | '－' | '―' | 'ー' | '‐' | '*' | '＊' | '/' | '／' | '=' | '＝'
+            | '!' | '！' | '<' | '＜' | '>' | '＞' | '&' | '＆' | '|' | '｜' | '(' | '（' | ')'
+            | '）' | '・' | '\\' | '￥' | '~' | '～' | ':' | '：' | ';' | '；' | ',' | '，'
+            | '、' | '@' | '＠' | '$' | '＄' | '%' | '％' | '^' | '＾' | '.' | '。' | '\''
+            | '’' | '?' | '？' | '[' | '「' | ']' | '」' | '{' | '｛' | '}' | '｝' | '`' | '‘'
+            | '♯' => true,
             _ => false,
         }
     }
 }
 
-trait IsSingleOrMultiByteDigit {
-    fn is_single_or_multi_byte_digit(&self) -> bool;
+trait IsSpecial {
+    fn is_special(&self) -> bool;
 }
 
-impl IsSingleOrMultiByteDigit for char {
-    fn is_single_or_multi_byte_digit(&self) -> bool {
+impl IsSpecial for char {
+    fn is_special(&self) -> bool {
         match self {
-            '1'..='9' | '１'..='９' => true,
-            _ => false,
-        }
-    }
-}
-
-trait IsSingleOrMultiBytespaceOrTab {
-    fn is_single_or_multi_byte_space_or_tab(&self) -> bool;
-}
-
-impl IsSingleOrMultiBytespaceOrTab for char {
-    fn is_single_or_multi_byte_space_or_tab(&self) -> bool {
-        match self {
-            ' ' | '　' | '\t' => true,
-            _ => false,
-        }
-    }
-}
-
-trait IsNewline {
-    fn is_newline(&self) -> bool;
-}
-
-impl IsNewline for char {
-    fn is_newline(&self) -> bool {
-        match self {
-            '\r' | '\n' => true,
+            ' ' | '　' | '\t' | '\r' | '\n' | '"' | '”' | '#' | '＃' => true,
             _ => false,
         }
     }

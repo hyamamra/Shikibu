@@ -14,11 +14,8 @@ pub enum Symbol {
     GreaterEqual,
     LeftParen,
     RightParen,
-    Ampersand,
-    Pipe,
     Comma,
-    Backslash,
-    Bullet,
+    Tilde,
 }
 
 impl ToString for Symbol {
@@ -38,11 +35,8 @@ impl ToString for Symbol {
             Symbol::GreaterEqual => ">=",
             Symbol::LeftParen => "(",
             Symbol::RightParen => ")",
-            Symbol::Ampersand => "&",
-            Symbol::Pipe => "|",
             Symbol::Comma => ",",
-            Symbol::Backslash => "\\",
-            Symbol::Bullet => "•",
+            Symbol::Tilde => "~",
         }
         .to_string()
     }

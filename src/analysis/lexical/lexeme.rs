@@ -12,6 +12,7 @@ pub enum Lexeme {
     Comment,
     Indent,
     Dedent,
+    Invalid(char),
 }
 
 impl ToString for Lexeme {
@@ -23,6 +24,7 @@ impl ToString for Lexeme {
             Lexeme::String(string) => string.to_string(),
             Lexeme::Number(number) => number.to_string(),
             Lexeme::Spaces(len) => " ".repeat(*len),
+            Lexeme::Invalid(c) => c.to_string(),
             _ => "".to_string(),
         }
     }
