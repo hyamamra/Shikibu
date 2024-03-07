@@ -1,6 +1,6 @@
 use super::{keyword::Keyword, lexeme::Lexeme, symbol::Symbol};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub lexeme: Lexeme,
     pub position: usize,
@@ -42,23 +42,37 @@ impl Token {
         }
     }
 
-    pub fn spaces(value: String, position: usize) -> Token {
+    pub fn spaces(len: usize, position: usize) -> Token {
         Token {
-            lexeme: Lexeme::Spaces(value),
+            lexeme: Lexeme::Spaces(len),
             position,
         }
     }
 
-    pub fn newline(value: String, position: usize) -> Token {
+    pub fn newline(position: usize) -> Token {
         Token {
-            lexeme: Lexeme::Newline(value),
+            lexeme: Lexeme::Newline,
             position,
         }
     }
 
-    pub fn comment(value: String, position: usize) -> Token {
+    pub fn comment(position: usize) -> Token {
         Token {
-            lexeme: Lexeme::Comment(value),
+            lexeme: Lexeme::Comment,
+            position,
+        }
+    }
+
+    pub fn indent(position: usize) -> Token {
+        Token {
+            lexeme: Lexeme::Indent,
+            position,
+        }
+    }
+
+    pub fn dedent(position: usize) -> Token {
+        Token {
+            lexeme: Lexeme::Dedent,
             position,
         }
     }

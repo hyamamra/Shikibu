@@ -162,26 +162,24 @@ impl Scanner {
                 break;
             }
         }
-        Token::spaces(spaces, position)
+        Token::spaces(spaces.len(), position)
     }
 
     fn drain_newline(&mut self) -> Token {
-        let position = self.cursor;
-        let newline = self.next().unwrap().to_string();
-        Token::newline(newline, position)
+        self.cursor += 1;
+        Token::newline(self.cursor - 1)
     }
 
     fn drain_comment(&mut self) -> Token {
         let position = self.cursor;
-        let mut comment = String::new();
 
         while let Some(c) = self.peek() {
             if c.is_newline() {
                 break;
             }
-            comment.push(self.next().unwrap());
+            _ = self.next().unwrap();
         }
-        Token::comment(comment, position)
+        Token::comment(position)
     }
 
     fn drain_keyword_or_identifier(&mut self) -> Token {
