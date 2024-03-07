@@ -5,20 +5,21 @@ use std::collections::VecDeque;
 pub fn sanitize(queue: &mut VecDeque<Token>) -> Result<Vec<Token>, ()> {
     let mut sanitized = Vec::new();
     let mut indents = Indents::from(0);
-    _ = reduce_empty_lines(queue);
+    cosume_empty_lines(queue).ok();
 
-    let Some(back) = queue.back() else {
-        return Ok(sanitized);
-    };
     // Add a newline token to the end of the queue to ensure that the last line is processed.
-    queue.push_back(Token::newline(
-        back.position + back.lexeme.to_string().len(),
-    ));
+    if let Some(_) = queue.back() {
+        queue.push_back(Token::newline());
+    } else {
+        return Ok(sanitized);
+    }
 
     while let Some(token) = queue.front() {
         match token.lexeme {
             Lexeme::Newline => {
-                sanitized.push(reduce_empty_lines(queue));
+                if cosume_empty_lines(queue).is_ok() {
+                    sanitized.push(Token::newline());
+                }
                 let Some(front) = queue.front() else {
                     break;
                 };
@@ -34,15 +35,13 @@ pub fn sanitize(queue: &mut VecDeque<Token>) -> Result<Vec<Token>, ()> {
         }
     }
     while !indents.is_top_level() {
-        let last = sanitized.last().unwrap();
-        sanitized.push(Token::dedent(last.position + last.lexeme.to_string().len()));
+        sanitized.push(Token::dedent());
         _ = indents.pop();
     }
     Ok(sanitized)
 }
 
-fn reduce_empty_lines(queue: &mut VecDeque<Token>) -> Token {
-    let position = queue.front().unwrap().position;
+fn cosume_empty_lines(queue: &mut VecDeque<Token>) -> Result<(), ()> {
     let mut deletable: Vec<&Token> = Vec::new();
 
     for index in 0..queue.len() {
@@ -60,13 +59,10 @@ fn reduce_empty_lines(queue: &mut VecDeque<Token>) -> Token {
     for index in 0..deletable.len() {
         if let Lexeme::Newline = deletable.get(index).unwrap().lexeme {
             queue.drain(..deletable.len() - index);
-            break;
+            return Ok(());
         }
     }
-    Token {
-        lexeme: Lexeme::Newline,
-        position,
-    }
+    Err(())
 }
 
 fn generate_offside_tokens(
@@ -80,7 +76,7 @@ fn generate_offside_tokens(
     let Lexeme::Spaces(spaces) = front.lexeme else {
         while indents.len() != 1 {
             _ = indents.pop();
-            offside_tokens.push(Token::dedent(front.position));
+            offside_tokens.push(Token::dedent());
         }
         return Ok(offside_tokens);
     };
@@ -88,7 +84,7 @@ fn generate_offside_tokens(
     if indents.last().unwrap() < &spaces {
         // Adds an indent token if the indent width is larger than the current width.
         indents.push(&spaces);
-        offside_tokens.push(Token::indent(front.position));
+        offside_tokens.push(Token::indent());
     } else if &spaces < indents.last().unwrap() {
         // If the indent width is less than the current one,
         // pop from the top of the indent stack until the same width is found,
@@ -105,7 +101,7 @@ fn generate_offside_tokens(
                 break;
             };
             _ = indents.pop();
-            offside_tokens.push(Token::dedent(front.position));
+            offside_tokens.push(Token::dedent());
         }
     }
     Ok(offside_tokens)

@@ -16,7 +16,7 @@ impl Iterator for Scanner {
 
         Some(match c {
             x if x.is_symbol() => self.drain_symbol().unwrap(),
-            '"' | '”' => self.drain_string(),
+            '「' => self.drain_string().unwrap(),
             '0'..='9' | '０'..='９' => self.drain_number(),
             ' ' | '　' | '\t' => self.drain_spaces_and_tabs(),
             '\r' | '\n' => self.drain_newline(),
@@ -97,10 +97,10 @@ impl Scanner {
         ))
     }
 
-    fn drain_string(&mut self) -> Token {
-        let position = self.cursor;
+    fn drain_string(&mut self) -> Result<Token, SyntaxError> {
         let mut string = String::new();
         _ = self.next();
+        let position = self.cursor;
 
         while let Some(c) = self.peek() {
             if c == &'\\' || c == &'￥' {
@@ -110,13 +110,13 @@ impl Scanner {
                 }
                 continue;
             }
-            if c == &'"' || c == &'”' {
+            if c == &'」' {
                 _ = self.next();
                 break;
             }
             string.push(self.next().unwrap());
         }
-        Token::string(string, position)
+        Ok(Token::string(string, position))
     }
 
     fn drain_digits_as_string(&mut self) -> String {
@@ -161,7 +161,7 @@ impl Scanner {
 
     fn drain_newline(&mut self) -> Token {
         self.cursor += 1;
-        Token::newline(self.cursor - 1)
+        Token::newline()
     }
 
     fn drain_comment(&mut self) -> Token {
@@ -205,7 +205,7 @@ impl IsSymbol for char {
             | '!' | '！' | '<' | '＜' | '>' | '＞' | '&' | '＆' | '|' | '｜' | '(' | '（' | ')'
             | '）' | '・' | '\\' | '￥' | '~' | '～' | ':' | '：' | ';' | '；' | ',' | '，'
             | '、' | '@' | '＠' | '$' | '＄' | '%' | '％' | '^' | '＾' | '.' | '。' | '\''
-            | '’' | '?' | '？' | '[' | '「' | ']' | '」' | '{' | '｛' | '}' | '｝' | '`' | '‘'
+            | '’' | '"' | '”' | '?' | '？' | '[' | ']' | '{' | '｛' | '}' | '｝' | '`' | '‘'
             | '♯' => true,
             _ => false,
         }
@@ -219,7 +219,7 @@ trait IsSpecial {
 impl IsSpecial for char {
     fn is_special(&self) -> bool {
         match self {
-            ' ' | '　' | '\t' | '\r' | '\n' | '"' | '”' | '#' | '＃' => true,
+            ' ' | '　' | '\t' | '\r' | '\n' | '「' | '」' | '#' | '＃' => true,
             _ => false,
         }
     }

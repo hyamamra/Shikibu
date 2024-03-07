@@ -3,84 +3,84 @@ use super::{keyword::Keyword, lexeme::Lexeme, symbol::Symbol};
 #[derive(Debug, Clone)]
 pub struct Token {
     pub lexeme: Lexeme,
-    pub position: usize,
+    pub position: Option<usize>,
 }
 
 impl Token {
     pub fn symbol(value: Symbol, position: usize) -> Token {
         Token {
             lexeme: Lexeme::Symbol(value),
-            position,
+            position: Some(position),
         }
     }
 
     pub fn keyword(value: Keyword, position: usize) -> Token {
         Token {
             lexeme: Lexeme::Keyword(value),
-            position,
+            position: Some(position),
         }
     }
 
     pub fn identifier(value: String, position: usize) -> Token {
         Token {
             lexeme: Lexeme::Identifier(value),
-            position,
+            position: Some(position),
         }
     }
 
     pub fn string(value: String, position: usize) -> Token {
         Token {
             lexeme: Lexeme::String(value),
-            position,
+            position: Some(position),
         }
     }
 
     pub fn number(value: String, position: usize) -> Token {
         Token {
             lexeme: Lexeme::Number(value),
-            position,
+            position: Some(position),
         }
     }
 
     pub fn spaces(len: usize, position: usize) -> Token {
         Token {
             lexeme: Lexeme::Spaces(len),
-            position,
+            position: Some(position),
         }
     }
 
-    pub fn newline(position: usize) -> Token {
+    pub fn newline() -> Token {
         Token {
             lexeme: Lexeme::Newline,
-            position,
+            position: None,
         }
     }
 
     pub fn comment(position: usize) -> Token {
         Token {
             lexeme: Lexeme::Comment,
-            position,
+            position: Some(position),
         }
     }
 
-    pub fn indent(position: usize) -> Token {
+    pub fn indent() -> Token {
         Token {
             lexeme: Lexeme::Indent,
-            position,
+            position: None,
         }
     }
 
-    pub fn dedent(position: usize) -> Token {
+    pub fn dedent() -> Token {
         Token {
             lexeme: Lexeme::Dedent,
-            position,
+            position: None,
         }
     }
 
     pub fn invalid(c: char, position: usize) -> Token {
         Token {
             lexeme: Lexeme::Invalid(c),
-            position,
+            position: Some(position),
         }
     }
 }
