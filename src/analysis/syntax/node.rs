@@ -5,15 +5,16 @@ pub enum Node {
     True,
     False,
     Null,
-    Variable(String),
     Assignment {
         name: String,
         value: Box<Node>,
     },
-    /// syntax is `しごと` (name) `（` (args) `）` (body)
+    Variable(String),
+    /// syntax is `関数` (name) `（` (args) `）` (body)
     Function {
         name: String,
-        args: Vec<Node>,
+        args: Vec<String>,
+        body: Vec<Node>,
     },
     Call {
         function: Box<Node>,
@@ -38,8 +39,8 @@ pub enum Node {
     /// syntax is `もし` (condition) `なら` (then_part) `ちがえば` (else_part)
     If {
         condition: Box<Node>,
-        then_part: Box<Node>,
-        else_part: Box<Node>,
+        then_part: Vec<Node>,
+        else_part: Vec<Node>,
     },
     /// syntax is `くりかえす` (body)
     Loop {
@@ -51,4 +52,6 @@ pub enum Node {
     Break,
     /// syntax is `つぎへ`
     Continue,
+    /// syntax is `表示` (value)
+    Print(Box<Node>),
 }

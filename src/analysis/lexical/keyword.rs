@@ -1,11 +1,13 @@
 use std::str::FromStr;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Keyword {
     /// もし
     If,
     /// なら
     Then,
+    /// もしくは
+    Elif,
     /// ちがえば
     Else,
     /// または
@@ -18,11 +20,11 @@ pub enum Keyword {
     False,
     /// 無
     Null,
-    /// しごと
+    /// 関数
     Function,
-    /// かえす
+    /// もどす
     Return,
-    /// くりかえす
+    /// くりかえし
     Loop,
     /// つぎへ
     Continue,
@@ -30,8 +32,6 @@ pub enum Keyword {
     Break,
     /// 表示
     Print,
-    /// 例外
-    Exception,
 }
 
 impl FromStr for Keyword {
@@ -41,19 +41,19 @@ impl FromStr for Keyword {
         match s {
             "もし" => Ok(Keyword::If),
             "なら" => Ok(Keyword::Then),
+            "もしくは" => Ok(Keyword::Elif),
             "ちがえば" => Ok(Keyword::Else),
             "または" => Ok(Keyword::Or),
             "かつ" => Ok(Keyword::And),
             "真" => Ok(Keyword::True),
             "偽" => Ok(Keyword::False),
             "無" => Ok(Keyword::Null),
-            "しごと" => Ok(Keyword::Function),
-            "かえす" => Ok(Keyword::Return),
-            "くりかえす" => Ok(Keyword::Loop),
+            "関数" => Ok(Keyword::Function),
+            "もどす" => Ok(Keyword::Return),
+            "くりかえし" => Ok(Keyword::Loop),
             "つぎへ" => Ok(Keyword::Continue),
             "ぬける" => Ok(Keyword::Break),
             "表示" => Ok(Keyword::Print),
-            "例外" => Ok(Keyword::Exception),
             _ => Err(()),
         }
     }
@@ -64,19 +64,19 @@ impl ToString for Keyword {
         match self {
             Keyword::If => "もし",
             Keyword::Then => "なら",
+            Keyword::Elif => "もしくは",
             Keyword::Else => "ちがえば",
             Keyword::Or => "または",
             Keyword::And => "かつ",
             Keyword::True => "真",
             Keyword::False => "偽",
             Keyword::Null => "無",
-            Keyword::Function => "しごと",
-            Keyword::Return => "かえす",
-            Keyword::Loop => "くりかえす",
+            Keyword::Function => "関数",
+            Keyword::Return => "もどす",
+            Keyword::Loop => "くりかえし",
             Keyword::Continue => "つぎへ",
             Keyword::Break => "ぬける",
             Keyword::Print => "表示",
-            Keyword::Exception => "例外",
         }
         .to_string()
     }

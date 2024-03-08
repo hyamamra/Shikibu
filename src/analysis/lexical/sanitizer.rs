@@ -2,8 +2,8 @@ use super::{lexeme::Lexeme, token::Token};
 use crate::analysis::error::SyntaxError;
 use std::collections::VecDeque;
 
-pub fn sanitize(queue: &mut VecDeque<Token>) -> Result<Vec<Token>, ()> {
-    let mut sanitized = Vec::new();
+pub fn sanitize(queue: &mut VecDeque<Token>) -> Result<VecDeque<Token>, ()> {
+    let mut sanitized = VecDeque::new();
     let mut indents = Indents::from(0);
     cosume_empty_lines(queue).ok();
 
@@ -18,7 +18,7 @@ pub fn sanitize(queue: &mut VecDeque<Token>) -> Result<Vec<Token>, ()> {
         match token.lexeme {
             Lexeme::Newline => {
                 if cosume_empty_lines(queue).is_ok() {
-                    sanitized.push(Token::newline());
+                    sanitized.push_back(Token::newline());
                 }
                 let Some(front) = queue.front() else {
                     break;
@@ -26,16 +26,16 @@ pub fn sanitize(queue: &mut VecDeque<Token>) -> Result<Vec<Token>, ()> {
                 let mut offside_tokens = generate_offside_tokens(front, &mut indents).unwrap();
 
                 while !offside_tokens.is_empty() {
-                    sanitized.push(offside_tokens.pop().unwrap());
+                    sanitized.push_back(offside_tokens.pop().unwrap());
                 }
             }
             Lexeme::Comment => _ = queue.pop_front(),
             Lexeme::Spaces(_) => _ = queue.pop_front(),
-            _ => sanitized.push(queue.pop_front().unwrap()),
+            _ => sanitized.push_back(queue.pop_front().unwrap()),
         }
     }
     while !indents.is_top_level() {
-        sanitized.push(Token::dedent());
+        sanitized.push_back(Token::dedent());
         _ = indents.pop();
     }
     Ok(sanitized)
@@ -92,10 +92,7 @@ fn generate_offside_tokens(
         loop {
             // Raise an error if an indent of a width that does not exist on the indent stack is detected.
             let Some(indent_length) = indents.last() else {
-                return Err(SyntaxError::new(
-                    "inconsistent dedent".to_string(),
-                    front.clone(),
-                ));
+                return Err(SyntaxError::unexpected_token(front.clone()));
             };
             if &spaces == indent_length {
                 break;

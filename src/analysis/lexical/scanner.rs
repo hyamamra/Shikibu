@@ -21,7 +21,7 @@ impl Iterator for Scanner {
             ' ' | '　' | '\t' => self.drain_spaces_and_tabs(),
             '\r' | '\n' => self.drain_newline(),
             '#' | '＃' => self.drain_comment(),
-            _ => self.drain_keyword_or_identifier(),
+            _ => self.drain_keyword_or_identifier().unwrap(),
         })
     }
 }
@@ -91,7 +91,7 @@ impl Scanner {
                 ')' | '）' => Symbol::RightParen,
                 ',' | '，' | '、' => Symbol::Comma,
                 '~' | '～' => Symbol::Tilde,
-                _ => return Err(SyntaxError::invalid_symbol(c1, position)),
+                _ => return Err(SyntaxError::invalid_char(c1, position)),
             },
             position,
         ))
@@ -176,7 +176,13 @@ impl Scanner {
         Token::comment(position)
     }
 
-    fn drain_keyword_or_identifier(&mut self) -> Token {
+    fn drain_keyword_or_identifier(&mut self) -> Result<Token, SyntaxError> {
+        if let Some(c) = self.peek() {
+            if c.is_special() {
+                return Err(SyntaxError::invalid_char(*c, self.cursor));
+            }
+        }
+
         let position = self.cursor;
         let mut identifier = String::new();
 
@@ -186,11 +192,11 @@ impl Scanner {
                 _ => identifier.push(self.next().unwrap()),
             }
         }
-        if let Ok(keyword) = identifier.parse() {
+        Ok(if let Ok(keyword) = identifier.parse() {
             Token::keyword(keyword, position)
         } else {
             Token::identifier(identifier, position)
-        }
+        })
     }
 }
 

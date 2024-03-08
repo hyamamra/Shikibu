@@ -1,6 +1,6 @@
 use super::{keyword::Keyword, symbol::Symbol};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Lexeme {
     Symbol(Symbol),
     Keyword(Keyword),

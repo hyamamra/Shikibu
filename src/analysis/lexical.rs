@@ -1,7 +1,7 @@
-mod keyword;
-mod lexeme;
+pub mod keyword;
+pub mod lexeme;
 mod sanitizer;
 mod scanner;
-mod symbol;
+pub mod symbol;
 pub mod token;
 pub mod tokens;
