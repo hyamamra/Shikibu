@@ -1,4 +1,4 @@
-use super::lexical::token::Token;
+use super::tokens::token::Token;
 
 #[derive(Debug)]
 pub struct SyntaxError {

@@ -12,8 +12,8 @@ pub enum Symbol {
     LessEqual,
     Greater,
     GreaterEqual,
-    LeftParen,
-    RightParen,
+    OpenParen,
+    CloseParen,
     Comma,
     Tilde,
 }
@@ -33,8 +33,8 @@ impl ToString for Symbol {
             Symbol::LessEqual => "<=",
             Symbol::Greater => ">",
             Symbol::GreaterEqual => ">=",
-            Symbol::LeftParen => "(",
-            Symbol::RightParen => ")",
+            Symbol::OpenParen => "(",
+            Symbol::CloseParen => ")",
             Symbol::Comma => ",",
             Symbol::Tilde => "~",
         }

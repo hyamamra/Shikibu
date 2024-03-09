@@ -1,5 +1,12 @@
-use super::{lexeme::Lexeme, sanitizer::sanitize, scanner::Scanner, token::Token};
+use self::{lexeme::Lexeme, sanitizer::sanitize, scanner::Scanner, token::Token};
 use std::{collections::VecDeque, str::FromStr};
+
+pub mod keyword;
+pub mod lexeme;
+mod sanitizer;
+mod scanner;
+pub mod symbol;
+pub mod token;
 
 #[derive(Debug)]
 pub struct Tokens {

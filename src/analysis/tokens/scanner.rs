@@ -1,5 +1,5 @@
 use super::token::Token;
-use crate::analysis::{error::SyntaxError, lexical::symbol::Symbol};
+use crate::analysis::{error::SyntaxError, tokens::symbol::Symbol};
 
 pub struct Scanner {
     chars: Vec<char>,
@@ -87,8 +87,8 @@ impl Scanner {
                     }
                     _ => Symbol::Greater,
                 },
-                '(' | '（' => Symbol::LeftParen,
-                ')' | '）' => Symbol::RightParen,
+                '(' | '（' => Symbol::OpenParen,
+                ')' | '）' => Symbol::CloseParen,
                 ',' | '，' | '、' => Symbol::Comma,
                 '~' | '～' => Symbol::Tilde,
                 _ => return Err(SyntaxError::invalid_char(c1, position)),

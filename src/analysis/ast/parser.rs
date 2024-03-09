@@ -1,8 +1,8 @@
 use super::node::Node;
 use crate::analysis::{
+    ast::expr_parser::parse_expression,
     error::SyntaxError,
-    lexical::{keyword::Keyword, lexeme::Lexeme, symbol::Symbol, tokens::Tokens},
-    syntax::expr_parser::parse_expression,
+    tokens::{keyword::Keyword, lexeme::Lexeme, symbol::Symbol, Tokens},
 };
 
 #[derive(Debug)]
@@ -93,20 +93,20 @@ fn parse_function(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
         return Err(SyntaxError::unexpected_token(token));
     };
 
-    tokens.consume(Lexeme::Symbol(Symbol::LeftParen)).unwrap();
-
-    let mut args = Vec::new();
+    tokens.consume(Lexeme::Symbol(Symbol::OpenParen)).unwrap();
+    let mut params = Vec::new();
     while let Some(token) = tokens.shift() {
         match token.lexeme {
-            Lexeme::Symbol(Symbol::RightParen) => break,
-            Lexeme::Identifier(name) => args.push(name),
+            Lexeme::Symbol(Symbol::Comma) => continue,
+            Lexeme::Symbol(Symbol::CloseParen) => break,
+            Lexeme::Identifier(name) => params.push(name),
             _ => return Err(SyntaxError::unexpected_token(token)),
         }
     }
     tokens.consume(Lexeme::Newline).unwrap();
     let body = parse_block(tokens).unwrap();
 
-    Ok(Node::Function { name, args, body })
+    Ok(Node::Function { name, params, body })
 }
 
 fn parse_if(tokens: &mut Tokens) -> Result<Node, SyntaxError> {

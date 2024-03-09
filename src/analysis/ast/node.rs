@@ -13,26 +13,42 @@ pub enum Node {
     /// syntax is `関数` (name) `（` (args) `）` (body)
     Function {
         name: String,
-        args: Vec<String>,
+        params: Vec<String>,
         body: Vec<Node>,
     },
     Call {
-        function: Box<Node>,
+        name: String,
         args: Vec<Node>,
     },
-    Addition {
+    Or {
         left: Box<Node>,
         right: Box<Node>,
     },
-    Subtraction {
+    And {
         left: Box<Node>,
         right: Box<Node>,
     },
-    Multiplication {
+    Equality {
         left: Box<Node>,
         right: Box<Node>,
     },
-    Division {
+    Relational {
+        left: Box<Node>,
+        right: Box<Node>,
+    },
+    Add {
+        left: Box<Node>,
+        right: Box<Node>,
+    },
+    Subtract {
+        left: Box<Node>,
+        right: Box<Node>,
+    },
+    Multiply {
+        left: Box<Node>,
+        right: Box<Node>,
+    },
+    Divide {
         left: Box<Node>,
         right: Box<Node>,
     },

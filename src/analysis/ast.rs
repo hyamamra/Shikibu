@@ -1,5 +1,9 @@
-use super::{node::Node, parser::Parser};
-use crate::analysis::{error::SyntaxError, lexical::tokens::Tokens};
+use self::{node::Node, parser::Parser};
+use super::{error::SyntaxError, tokens::Tokens};
+
+mod expr_parser;
+mod node;
+mod parser;
 
 #[derive(Debug)]
 pub struct Ast {

@@ -1,3 +1,3 @@
+pub mod ast;
 pub mod error;
-pub mod lexical;
-pub mod syntax;
+pub mod tokens;
