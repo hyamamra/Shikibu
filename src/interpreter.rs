@@ -31,7 +31,7 @@ impl Interpreter {
             functions: HashMap::new(),
             variables: HashMap::new(),
         };
-        runner.drain_functions();
+        runner.drain_functions().unwrap();
         runner.run_ast().unwrap();
         Ok(())
     }
@@ -91,15 +91,56 @@ impl Interpreter {
             Node::LessThanOrEqual { left, right } => todo!(),
             Node::GreaterThan { left, right } => todo!(),
             Node::GreaterThanOrEqual { left, right } => todo!(),
-            Node::Add { left, right } => todo!(),
-            Node::Subtract { left, right } => todo!(),
-            Node::Multiply { left, right } => todo!(),
-            Node::Divide { left, right } => todo!(),
+            Node::Add {
+                ref left,
+                ref right,
+            } => {
+                let left = self.calculate(*left.clone()).unwrap();
+                let right = self.calculate(*right.clone()).unwrap();
+                match (left, right) {
+                    (Value::Number(left), Value::Number(right)) => Value::Number(left + right),
+                    (Value::String(left), Value::String(right)) => Value::String(left + &right),
+                    _ => return Err(RuntimeError::string_addition(value)),
+                }
+            }
+            Node::Subtract {
+                ref left,
+                ref right,
+            } => {
+                let left = self.calculate(*left.clone()).unwrap();
+                let right = self.calculate(*right.clone()).unwrap();
+                match (left, right) {
+                    (Value::Number(left), Value::Number(right)) => Value::Number(left - right),
+                    _ => return Err(RuntimeError::string_addition(value)),
+                }
+            }
+            Node::Multiply {
+                ref left,
+                ref right,
+            } => {
+                let left = self.calculate(*left.clone()).unwrap();
+                let right = self.calculate(*right.clone()).unwrap();
+                match (left, right) {
+                    (Value::Number(left), Value::Number(right)) => Value::Number(left * right),
+                    _ => return Err(RuntimeError::string_addition(value)),
+                }
+            }
+            Node::Divide {
+                ref left,
+                ref right,
+            } => {
+                let left = self.calculate(*left.clone()).unwrap();
+                let right = self.calculate(*right.clone()).unwrap();
+                match (left, right) {
+                    (Value::Number(left), Value::Number(right)) => Value::Number(left / right),
+                    _ => return Err(RuntimeError::string_addition(value)),
+                }
+            }
             _ => return Err(RuntimeError::unexpected_node(value)),
         })
     }
 
-    fn drain_functions(&mut self) {
+    fn drain_functions(&mut self) -> Result<(), RuntimeError> {
         let mut functions = VecDeque::from(self.ast.drain_functions());
         while !functions.is_empty() {
             let function = functions.pop_front().unwrap();
@@ -111,23 +152,22 @@ impl Interpreter {
             {
                 self.functions.insert(name.clone(), function);
             } else {
-                panic!("Expected function, found {:?}", function);
+                return Err(RuntimeError::unexpected_node(function));
             }
         }
+        Ok(())
     }
 }
 
 fn string_to_number(string: &str) -> f64 {
-    to_half_size_number(string).parse().unwrap()
-}
-
-fn to_half_size_number(zenkaku_num: &str) -> String {
-    zenkaku_num
+    string
         .chars()
         .map(|c| match c {
             '０'..='９' => (c as u8 - '０' as u8 + b'0') as char,
             '．' => '.',
             _ => c,
         })
-        .collect()
+        .collect::<String>()
+        .parse()
+        .unwrap()
 }

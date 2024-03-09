@@ -1,16 +1,14 @@
 use crate::interpreter::ast::Ast;
 use crate::interpreter::tokens::Tokens;
 use crate::interpreter::Interpreter;
+use std::fs::read_to_string;
 use std::str::FromStr;
 
 mod interpreter;
 
 fn main() {
-    let src = "値　＝　１０．５
-表示　値
-値　＝　１
-表示　値";
-    let tokens = Tokens::from_str(src).unwrap();
+    let src = read_to_string("./sample/main.skb").unwrap();
+    let tokens = Tokens::from_str(src.as_str()).unwrap();
     let ast = Ast::try_from(tokens).unwrap();
     Interpreter::run(ast).unwrap();
 }

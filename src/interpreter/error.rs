@@ -25,14 +25,21 @@ impl SyntaxError {
 #[derive(Debug)]
 pub struct RuntimeError {
     pub message: String,
-    pub token: Option<Node>,
+    pub node: Option<Node>,
 }
 
 impl RuntimeError {
     pub fn unexpected_node(node: Node) -> Self {
         Self {
             message: format!("Unexpected node: {:?}", node),
-            token: Some(node),
+            node: Some(node),
+        }
+    }
+
+    pub fn string_addition(node: Node) -> Self {
+        Self {
+            message: "Cannot add strings".to_string(),
+            node: Some(node),
         }
     }
 }
