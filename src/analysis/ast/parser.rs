@@ -30,7 +30,7 @@ impl Parser {
 fn parse_node(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
     let front = tokens.front().unwrap();
 
-    match &front.lexeme {
+    let node = match &front.lexeme {
         Lexeme::Keyword(keyword) => match keyword {
             Keyword::If => parse_if(tokens),
             Keyword::Function => parse_function(tokens),
@@ -49,7 +49,10 @@ fn parse_node(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
             }
         }
         _ => Err(SyntaxError::unexpected_token(front.clone())),
-    }
+    };
+
+    tokens.consume(Lexeme::Newline).ok();
+    node
 }
 
 fn is_assignment(tokens: &Tokens) -> bool {
@@ -69,7 +72,6 @@ fn parse_block(tokens: &mut Tokens) -> Result<Vec<Node>, SyntaxError> {
     let mut body = Vec::new();
     while tokens.consume(Lexeme::Dedent).is_err() {
         body.push(parse_node(tokens).unwrap());
-        tokens.consume(Lexeme::Newline).ok();
     }
     Ok(body)
 }
@@ -119,6 +121,7 @@ fn parse_if(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
         tokens.consume(Lexeme::Dedent).unwrap();
     };
 
+    println!("{:?}", tokens.front());
     tokens.consume(Lexeme::Keyword(Keyword::Then)).unwrap();
     tokens.consume(Lexeme::Newline).unwrap();
     let then_part = parse_block(tokens).unwrap();

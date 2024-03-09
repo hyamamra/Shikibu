@@ -20,19 +20,37 @@ pub enum Node {
         name: String,
         args: Vec<Node>,
     },
+    /// syntax is (left) `または` (right)
     Or {
         left: Box<Node>,
         right: Box<Node>,
     },
+    /// syntax is (left) `かつ` (right)
     And {
         left: Box<Node>,
         right: Box<Node>,
     },
-    Equality {
+    Equal {
         left: Box<Node>,
         right: Box<Node>,
     },
-    Relational {
+    NotEqual {
+        left: Box<Node>,
+        right: Box<Node>,
+    },
+    LessThan {
+        left: Box<Node>,
+        right: Box<Node>,
+    },
+    LessThanOrEqual {
+        left: Box<Node>,
+        right: Box<Node>,
+    },
+    GreaterThan {
+        left: Box<Node>,
+        right: Box<Node>,
+    },
+    GreaterThanOrEqual {
         left: Box<Node>,
         right: Box<Node>,
     },
@@ -58,11 +76,11 @@ pub enum Node {
         then_part: Vec<Node>,
         else_part: Vec<Node>,
     },
-    /// syntax is `くりかえす` (body)
+    /// syntax is `くりかえし` (body)
     Loop {
         body: Vec<Node>,
     },
-    /// syntax is `かえす` (value)
+    /// syntax is `もどす` (value)
     Return(Box<Node>),
     /// syntax is `ぬける`
     Break,

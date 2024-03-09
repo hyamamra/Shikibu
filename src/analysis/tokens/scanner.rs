@@ -57,7 +57,7 @@ impl Scanner {
             match c1 {
                 '+' | '＋' => Symbol::Plus,
                 '-' | '－' => Symbol::Minus,
-                '*' | '＊' => Symbol::Star,
+                '*' | '＊' => Symbol::Asterisk,
                 '/' | '／' => Symbol::Slash,
                 '=' | '＝' => match c2 {
                     '=' | '＝' => {

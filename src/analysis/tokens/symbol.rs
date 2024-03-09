@@ -2,7 +2,7 @@
 pub enum Symbol {
     Plus,
     Minus,
-    Star,
+    Asterisk,
     Slash,
     Equal,
     EqualEqual,
@@ -23,7 +23,7 @@ impl ToString for Symbol {
         match self {
             Symbol::Plus => "+",
             Symbol::Minus => "-",
-            Symbol::Star => "*",
+            Symbol::Asterisk => "*",
             Symbol::Slash => "/",
             Symbol::Equal => "=",
             Symbol::EqualEqual => "==",
