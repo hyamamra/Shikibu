@@ -26,17 +26,17 @@ pub struct Interpreter {
 
 impl Interpreter {
     pub fn run(ast: Ast) -> Result<(), RuntimeError> {
-        let mut runner = Self {
+        let mut interpreter = Self {
             ast,
             functions: HashMap::new(),
             variables: HashMap::new(),
         };
-        runner.drain_functions().unwrap();
-        runner.run_ast().unwrap();
+        interpreter.drain_functions().unwrap();
+        interpreter.run_children().unwrap();
         Ok(())
     }
 
-    fn run_ast(&mut self) -> Result<(), RuntimeError> {
+    fn run_children(&mut self) -> Result<(), RuntimeError> {
         while !self.ast.is_empty() {
             let node = self.ast.pop_front().unwrap();
             match node {
@@ -56,6 +56,29 @@ impl Interpreter {
             }
         }
         Ok(())
+    }
+
+    fn run_function(&mut self) -> Result<Value, RuntimeError> {
+        while !self.ast.is_empty() {
+            let node = self.ast.pop_front().unwrap();
+            match node {
+                Node::Assignment { name, value } => self.assign_variable(name, *value).unwrap(),
+                Node::Call { name, args } => todo!(),
+                Node::If {
+                    condition,
+                    then_part,
+                    else_part,
+                } => todo!(),
+                Node::Loop { body } => todo!(),
+                Node::Return(value) => return self.calculate(*value),
+                Node::Print(value) => {
+                    let value = self.calculate(*value).unwrap();
+                    self.print(&value);
+                }
+                _ => return Err(RuntimeError::unexpected_node(node)),
+            }
+        }
+        Ok(Value::Null)
     }
 
     fn print(&self, value: &Value) {
@@ -81,16 +104,184 @@ impl Interpreter {
             Node::True => Value::True,
             Node::False => Value::False,
             Node::Null => Value::Null,
-            Node::Variable(variable) => self.variables.get(&variable).unwrap().clone(),
-            Node::Call { name, args } => todo!(),
-            Node::Or { left, right } => todo!(),
-            Node::And { left, right } => todo!(),
-            Node::Equal { left, right } => todo!(),
-            Node::NotEqual { left, right } => todo!(),
-            Node::LessThan { left, right } => todo!(),
-            Node::LessThanOrEqual { left, right } => todo!(),
-            Node::GreaterThan { left, right } => todo!(),
-            Node::GreaterThanOrEqual { left, right } => todo!(),
+            Node::Variable(ref variable) => {
+                if let Some(value) = self.variables.get(variable) {
+                    value.clone()
+                } else {
+                    return Err(RuntimeError::undefined_variable(value));
+                }
+            }
+            Node::Call { ref name, ref args } => {
+                let Some(function) = self.functions.get(name) else {
+                    return Err(RuntimeError::undefined_function(value));
+                };
+
+                let Node::Function {
+                    name: _,
+                    params,
+                    body,
+                } = function.clone()
+                else {
+                    panic!()
+                };
+
+                if params.len() != args.len() {
+                    return Err(RuntimeError::wrong_number_of_arguments(value));
+                }
+
+                let mut variables = self.variables.clone();
+                for (param, arg) in params.iter().zip(args.iter()) {
+                    variables.insert(param.clone(), self.calculate(arg.clone()).unwrap());
+                }
+
+                let mut interpreter = Self {
+                    ast: Ast::new(body),
+                    functions: self.functions.clone(),
+                    variables,
+                };
+
+                interpreter.run_function().unwrap()
+            }
+            Node::Or {
+                ref left,
+                ref right,
+            } => {
+                let left = self.calculate(*left.clone()).unwrap();
+                let right = self.calculate(*right.clone()).unwrap();
+                match (left, right) {
+                    (Value::True, _) => Value::True,
+                    (_, Value::True) => Value::True,
+                    _ => Value::False,
+                }
+            }
+            Node::And {
+                ref left,
+                ref right,
+            } => {
+                let left = self.calculate(*left.clone()).unwrap();
+                let right = self.calculate(*right.clone()).unwrap();
+                match (left, right) {
+                    (Value::False, _) => Value::False,
+                    (_, Value::False) => Value::False,
+                    _ => Value::True,
+                }
+            }
+            Node::Equal {
+                ref left,
+                ref right,
+            } => {
+                let left = self.calculate(*left.clone()).unwrap();
+                let right = self.calculate(*right.clone()).unwrap();
+                match (left, right) {
+                    (Value::Number(left), Value::Number(right)) => {
+                        if left == right {
+                            Value::True
+                        } else {
+                            Value::False
+                        }
+                    }
+                    (Value::String(left), Value::String(right)) => {
+                        if left == right {
+                            Value::True
+                        } else {
+                            Value::False
+                        }
+                    }
+                    _ => return Err(RuntimeError::comparing_different_types(value)),
+                }
+            }
+            Node::NotEqual {
+                ref left,
+                ref right,
+            } => {
+                let left = self.calculate(*left.clone()).unwrap();
+                let right = self.calculate(*right.clone()).unwrap();
+                match (left, right) {
+                    (Value::Number(left), Value::Number(right)) => {
+                        if left != right {
+                            Value::True
+                        } else {
+                            Value::False
+                        }
+                    }
+                    (Value::String(left), Value::String(right)) => {
+                        if left != right {
+                            Value::True
+                        } else {
+                            Value::False
+                        }
+                    }
+                    _ => return Err(RuntimeError::comparing_different_types(value)),
+                }
+            }
+            Node::LessThan {
+                ref left,
+                ref right,
+            } => {
+                let left = self.calculate(*left.clone()).unwrap();
+                let right = self.calculate(*right.clone()).unwrap();
+                match (left, right) {
+                    (Value::Number(left), Value::Number(right)) => {
+                        if left < right {
+                            Value::True
+                        } else {
+                            Value::False
+                        }
+                    }
+                    _ => return Err(RuntimeError::comparing_different_types(value)),
+                }
+            }
+            Node::LessThanOrEqual {
+                ref left,
+                ref right,
+            } => {
+                let left = self.calculate(*left.clone()).unwrap();
+                let right = self.calculate(*right.clone()).unwrap();
+                match (left, right) {
+                    (Value::Number(left), Value::Number(right)) => {
+                        if left <= right {
+                            Value::True
+                        } else {
+                            Value::False
+                        }
+                    }
+                    _ => return Err(RuntimeError::comparing_different_types(value)),
+                }
+            }
+            Node::GreaterThan {
+                ref left,
+                ref right,
+            } => {
+                let left = self.calculate(*left.clone()).unwrap();
+                let right = self.calculate(*right.clone()).unwrap();
+                match (left, right) {
+                    (Value::Number(left), Value::Number(right)) => {
+                        if left > right {
+                            Value::True
+                        } else {
+                            Value::False
+                        }
+                    }
+                    _ => return Err(RuntimeError::comparing_different_types(value)),
+                }
+            }
+            Node::GreaterThanOrEqual {
+                ref left,
+                ref right,
+            } => {
+                let left = self.calculate(*left.clone()).unwrap();
+                let right = self.calculate(*right.clone()).unwrap();
+                match (left, right) {
+                    (Value::Number(left), Value::Number(right)) => {
+                        if left >= right {
+                            Value::True
+                        } else {
+                            Value::False
+                        }
+                    }
+                    _ => return Err(RuntimeError::comparing_different_types(value)),
+                }
+            }
             Node::Add {
                 ref left,
                 ref right,

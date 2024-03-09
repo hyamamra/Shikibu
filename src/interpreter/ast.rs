@@ -25,6 +25,12 @@ impl TryFrom<Tokens> for Ast {
 }
 
 impl Ast {
+    pub fn new(nodes: Vec<Node>) -> Self {
+        Self {
+            children: VecDeque::from(nodes),
+        }
+    }
+
     pub fn is_empty(&self) -> bool {
         self.children.is_empty()
     }

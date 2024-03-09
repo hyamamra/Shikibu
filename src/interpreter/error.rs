@@ -42,4 +42,32 @@ impl RuntimeError {
             node: Some(node),
         }
     }
+
+    pub fn comparing_different_types(node: Node) -> Self {
+        Self {
+            message: "Cannot compare different types".to_string(),
+            node: Some(node),
+        }
+    }
+
+    pub fn undefined_variable(node: Node) -> Self {
+        Self {
+            message: "Undefined variable".to_string(),
+            node: Some(node),
+        }
+    }
+
+    pub fn undefined_function(node: Node) -> Self {
+        Self {
+            message: "Undefined function".to_string(),
+            node: Some(node),
+        }
+    }
+
+    pub fn wrong_number_of_arguments(node: Node) -> Self {
+        Self {
+            message: "Wrong number of arguments".to_string(),
+            node: Some(node),
+        }
+    }
 }
