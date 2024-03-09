@@ -1,5 +1,5 @@
 use super::{lexeme::Lexeme, token::Token};
-use crate::analysis::error::SyntaxError;
+use crate::interpreter::error::SyntaxError;
 use std::collections::VecDeque;
 
 pub fn sanitize(queue: &mut VecDeque<Token>) -> Result<VecDeque<Token>, ()> {

@@ -1,4 +1,4 @@
-use super::tokens::token::Token;
+use super::{ast::node::Node, tokens::token::Token};
 
 #[derive(Debug)]
 pub struct SyntaxError {
@@ -18,6 +18,21 @@ impl SyntaxError {
         Self {
             message: format!("Unexpected token: {:?}", token.lexeme),
             token: Some(token),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct RuntimeError {
+    pub message: String,
+    pub token: Option<Node>,
+}
+
+impl RuntimeError {
+    pub fn unexpected_node(node: Node) -> Self {
+        Self {
+            message: format!("Unexpected node: {:?}", node),
+            token: Some(node),
         }
     }
 }

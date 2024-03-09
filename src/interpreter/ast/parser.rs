@@ -1,5 +1,5 @@
 use super::node::Node;
-use crate::analysis::{
+use crate::interpreter::{
     ast::expr_parser::parse_expression,
     error::SyntaxError,
     tokens::{keyword::Keyword, lexeme::Lexeme, symbol::Symbol, Tokens},

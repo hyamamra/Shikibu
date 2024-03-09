@@ -1,19 +1,16 @@
-use crate::analysis::ast::Ast;
-use crate::analysis::tokens::Tokens;
+use crate::interpreter::ast::Ast;
+use crate::interpreter::tokens::Tokens;
+use crate::interpreter::Interpreter;
 use std::str::FromStr;
 
-mod analysis;
+mod interpreter;
 
 fn main() {
-    let src = "# これはコメントです
-関数　否定（真偽値）
-　　もどす　1２＋４
-　　もし　真　=＝　偽　なら
-　　　　くりかえし
-　　　　　　表示　「ループ中」
-　　　　　　ぬける
-　　値＝無";
+    let src = "値　＝　１０．５
+表示　値
+値　＝　１
+表示　値";
     let tokens = Tokens::from_str(src).unwrap();
     let ast = Ast::try_from(tokens).unwrap();
-    println!("{:#?}", &ast);
+    Interpreter::run(ast).unwrap();
 }

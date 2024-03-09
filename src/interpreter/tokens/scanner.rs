@@ -1,5 +1,5 @@
 use super::token::Token;
-use crate::analysis::{error::SyntaxError, tokens::symbol::Symbol};
+use crate::interpreter::{error::SyntaxError, tokens::symbol::Symbol};
 
 pub struct Scanner {
     chars: Vec<char>,
@@ -138,8 +138,8 @@ impl Scanner {
             return Token::number(number, position);
         };
         if c == &'.' || c == &'．' {
+            number.push(self.next().unwrap());
             number.push_str(self.drain_digits_as_string().as_str());
-            _ = self.next();
         }
         Token::number(number, position)
     }
