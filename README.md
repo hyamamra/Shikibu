@@ -1,45 +1,45 @@
+<link href="./README.css" rel="stylesheet"></link>
+
 # Shikibu
 Shikibu is a Japanese programming language.  
 It was created for Japanese beginners in programming.  
 Now, let's try programming with Shikibu!
 
 ## Sample
-```
-＃　変数定義
-値＝１
+<pre class="shikibu"><code><span class="comment">＃　変数定義</span>
+<span class="identifier">値</span><span class="symbol">＝</span><span class="number">１</span>
 
-表示　値
-＃　出力：　1
+<span class="keyword">表示</span>　<span class="identifier">値</span>
+<span class="comment">＃　出力：　1</span>
 
-＃　関数定義
-関数　否定（真偽値）
-　　もどす　真偽値＝＝偽
+<span class="comment">＃　関数定義</span>
+<span class="keyword">関数</span>　<span class="function">否定</span>（<span class="identifier">真偽値</span>）
+　　<span class="keyword">もどす</span>　<span class="identifier">真偽値</span><span class="symbol">＝＝</span><span class="keyword">偽</span>
 
-表示　否定（真）
-＃　出力：　偽
+<span class="keyword">表示</span>　<span class="function">否定</span>（<span class="keyword">真</span>）
+<span class="comment">＃　出力：　偽</span>
 
-＃　条件分岐
-もし　値＝＝２　なら
-　　表示　「値は２です」
-もしくは
-　　（値＜２　または　２＜値）
-　　かつ　０＜値
-なら
-　　表示　「値は２ではない正の数です」
-ちがえば
-　　表示　「値が不正です」
-＃　出力：　値は２ではない正の数です
+<span class="comment">＃　条件分岐</span>
+<span class="keyword">もし</span>　<span class="identifier">値</span><span class="symbol">＝＝</span><span class="number">２</span>　<span class="keyword">なら</span>
+　　<span class="keyword">表示</span>　<span class="string">「値は２です」</span>
+<span class="keyword">もしくは</span>
+　　（<span class="identifier">値</span><span class="symbol">＜</span><span class="number">２</span>　<span class="keyword">または</span>　<span class="number">２</span><span class="symbol">＜</span><span class="identifier">値</span>）
+　　<span class="keyword">かつ</span>　<span class="number">０</span><span class="symbol">＜</span><span class="identifier">値</span>
+<span class="keyword">なら</span>
+　　<span class="keyword">表示</span>　<span class="string">「値は２ではない正の数です」</span>
+<span class="keyword">ちがえば</span>
+　　<span class="keyword">表示</span>　<span class="string">「値が不正です」</span>
+<span class="comment">＃　出力：　値は２ではない正の数です</span>
 
 
-＃　ループ
-回数＝０
-くりかえし
-　　回数＝回数＋１
-　　もし　回数＜７　なら
-　　　　つぎへ
-　　もしくは　９＝＝回数　なら
-　　　　ぬける
-　　表示　「現在の回数は」＋回数＋「です」
-＃　出力：　現在の回数は７です
-＃　出力：　現在の回数は８です
-```
+<span class="comment">＃　ループ</span>
+<span class="identifier">回数</span><span class="symbol">＝</span><span class="number">０</span>
+<span class="keyword">くりかえし</span>
+　　<span class="identifier">回数</span><span class="symbol">＝</span><span class="identifier">回数</span><span class="symbol">＋</span><span class="number">１</span>
+　　<span class="keyword">もし</span>　<span class="identifier">回数</span><span class="symbol">＜</span><span class="number">７</span>　<span class="keyword">なら</span>
+　　　　<span class="keyword">つぎへ</span>
+　　<span class="keyword">もしくは</span>　<span class="number">９</span><span class="symbol">＝＝</span><span class="identifier">回数</span>　<span class="keyword">なら</span>
+　　　　<span class="keyword">ぬける</span>
+　　<span class="keyword">表示</span>　<span class="string">「現在の回数は」</span><span class="symbol">＋</span><span class="identifier">回数</span><span class="symbol">＋</span><span class="string">「です」</span>
+<span class="comment">＃　出力：　現在の回数は７です</span>
+<span class="comment">＃　出力：　現在の回数は８です</span></code></pre>
