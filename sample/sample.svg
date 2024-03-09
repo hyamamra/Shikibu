@@ -1,4 +1,4 @@
-<svg fill="none" viewBox="0 0 500 780" width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+<svg fill="none" viewBox="0 0 400 780" width="400" height="400" xmlns="http://www.w3.org/2000/svg">
     <foreignObject width="100%" height="100%">
         <div xmlns="http://www.w3.org/1999/xhtml">
             <style>
@@ -32,27 +32,23 @@
             .number {
                 color: #ffc56d;
             }
-
-            .comment {
-                color: #94a1b3;
-            }
             </style>
-            <pre class="shikibu"><code><span class="comment">＃　変数定義</span>
+            <pre class="shikibu"><code>＃　変数定義
 <span class="identifier">値</span><span class="symbol">＝</span><span class="number">１</span>
 
 <span class="keyword">表示</span>　<span class="identifier">値</span>
-<span class="comment">＃　出力：　1</span>
+＃　1
 
 
-<span class="comment">＃　関数定義</span>
+＃　関数定義
 <span class="keyword">関数</span>　<span class="function">否定</span>（<span class="identifier">真偽値</span>）
 　　<span class="keyword">もどす</span>　<span class="identifier">真偽値</span><span class="symbol">＝＝</span><span class="keyword">偽</span>
 
 <span class="keyword">表示</span>　<span class="function">否定</span>（<span class="keyword">真</span>）
-<span class="comment">＃　出力：　偽</span>
+＃　偽
 
 
-<span class="comment">＃　条件分岐</span>
+＃　条件分岐
 <span class="keyword">もし</span>　<span class="identifier">値</span><span class="symbol">＝＝</span><span class="number">２</span>　<span class="keyword">なら</span>
 　　<span class="keyword">表示</span>　<span class="string">「値は２です」</span>
 <span class="keyword">もしくは</span>
@@ -62,10 +58,10 @@
 　　<span class="keyword">表示</span>　<span class="string">「値は２ではない正の数です」</span>
 <span class="keyword">ちがえば</span>
 　　<span class="keyword">表示</span>　<span class="string">「値が不正です」</span>
-<span class="comment">＃　出力：　値は２ではない正の数です</span>
+＃　値は２ではない正の数です
 
 
-<span class="comment">＃　ループ</span>
+＃　ループ
 <span class="identifier">回数</span><span class="symbol">＝</span><span class="number">０</span>
 <span class="keyword">くりかえし</span>
 　　<span class="identifier">回数</span><span class="symbol">＝</span><span class="identifier">回数</span><span class="symbol">＋</span><span class="number">１</span>
@@ -74,8 +70,8 @@
 　　<span class="keyword">もしくは</span>　<span class="number">９</span><span class="symbol">＝＝</span><span class="identifier">回数</span>　<span class="keyword">なら</span>
 　　　　<span class="keyword">ぬける</span>
 　　<span class="keyword">表示</span>　<span class="string">「現在の回数は」</span><span class="symbol">＋</span><span class="identifier">回数</span><span class="symbol">＋</span><span class="string">「です」</span>
-<span class="comment">＃　出力：　現在の回数は７です</span>
-<span class="comment">＃　出力：　現在の回数は８です</span></code></pre>
+＃　現在の回数は７です
+＃　現在の回数は８です</code></pre>
         </div>
     </foreignObject>
 </svg>

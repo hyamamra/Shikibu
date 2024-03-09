@@ -8,7 +8,7 @@ pub mod ast;
 pub mod error;
 pub mod tokens;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 enum Value {
     Number(f64),
     String(String),
@@ -40,14 +40,14 @@ impl Interpreter {
         while !self.ast.is_empty() {
             let node = self.ast.pop_front().unwrap();
             match node {
-                Node::Assignment { name, value } => self.assign_variable(name, *value).unwrap(),
-                Node::Call { name, args } => todo!(),
+                Node::Assignment { name, value } => _ = self.assign_variable(name, *value),
+                Node::Call { .. } => _ = self.call_function(node),
                 Node::If {
                     condition,
                     then_part,
                     else_part,
-                } => todo!(),
-                Node::Loop { body } => todo!(),
+                } => _ = self.run_if(*condition, then_part, else_part),
+                Node::Loop { body } => _ = self.run_loop(body),
                 Node::Print(value) => {
                     let value = self.calculate(*value).unwrap();
                     self.print(&value);
@@ -63,13 +63,20 @@ impl Interpreter {
             let node = self.ast.pop_front().unwrap();
             match node {
                 Node::Assignment { name, value } => self.assign_variable(name, *value).unwrap(),
-                Node::Call { name, args } => todo!(),
+                Node::Call { .. } => _ = self.call_function(node),
                 Node::If {
                     condition,
                     then_part,
                     else_part,
-                } => todo!(),
-                Node::Loop { body } => todo!(),
+                } => _ = self.run_if(*condition, then_part, else_part),
+                Node::Loop { body } => {
+                    let node = self.run_loop_inner_function(body).unwrap();
+                    match node {
+                        Node::Return(value) => return self.calculate(*value),
+                        Node::Null => (),
+                        _ => return Err(RuntimeError::unexpected_node(node)),
+                    }
+                }
                 Node::Return(value) => return self.calculate(*value),
                 Node::Print(value) => {
                     let value = self.calculate(*value).unwrap();
@@ -79,6 +86,112 @@ impl Interpreter {
             }
         }
         Ok(Value::Null)
+    }
+
+    fn call_function(&mut self, value: Node) -> Result<Value, RuntimeError> {
+        let Node::Call { ref name, ref args } = value else {
+            panic!()
+        };
+
+        let Some(function) = self.functions.get(name) else {
+            return Err(RuntimeError::undefined_function(value));
+        };
+
+        let Node::Function {
+            name: _,
+            params,
+            body,
+        } = function.clone()
+        else {
+            panic!()
+        };
+
+        if params.len() != args.len() {
+            return Err(RuntimeError::wrong_number_of_arguments(value));
+        }
+
+        let mut variables = HashMap::new();
+        for (param, arg) in params.iter().zip(args.iter()) {
+            variables.insert(param.clone(), self.calculate(arg.clone()).unwrap());
+        }
+
+        let mut interpreter = Self {
+            ast: Ast::new(body),
+            functions: self.functions.clone(),
+            variables,
+        };
+
+        interpreter.run_function()
+    }
+
+    fn run_loop(&mut self, body: Vec<Node>) -> Result<(), RuntimeError> {
+        let mut cycle = body.iter().cycle();
+        loop {
+            let node = cycle.next().unwrap().clone();
+            match node {
+                Node::Assignment { name, value } => _ = self.assign_variable(name, *value),
+                Node::Call { .. } => _ = self.call_function(node),
+                Node::If {
+                    condition,
+                    then_part,
+                    else_part,
+                } => {
+                    let node = self.run_if(*condition, then_part, else_part).unwrap();
+                    if node == Node::Continue {
+                        continue;
+                    }
+                    if node == Node::Break {
+                        break;
+                    }
+                }
+                Node::Loop { body } => _ = self.run_loop(body),
+                Node::Continue => continue,
+                Node::Break => break,
+                Node::Print(value) => {
+                    let value = self.calculate(*value).unwrap();
+                    self.print(&value);
+                }
+                _ => return Err(RuntimeError::unexpected_node(node)),
+            }
+        }
+        Ok(())
+    }
+
+    fn run_loop_inner_function(&mut self, body: Vec<Node>) -> Result<Node, RuntimeError> {
+        let mut cycle = body.iter().cycle();
+        loop {
+            let node = cycle.next().unwrap().clone();
+            match node {
+                Node::Assignment { name, value } => _ = self.assign_variable(name, *value),
+                Node::Call { .. } => _ = self.call_function(node),
+                Node::If {
+                    condition,
+                    then_part,
+                    else_part,
+                } => {
+                    let node = self.run_if(*condition, then_part, else_part).unwrap();
+                    if let Node::Return(value) = node {
+                        return Ok(Node::Return(value));
+                    }
+                    if node == Node::Continue {
+                        continue;
+                    }
+                    if node == Node::Break {
+                        break;
+                    }
+                }
+                Node::Loop { body } => _ = self.run_loop(body),
+                Node::Return(value) => return Ok(Node::Return(value)),
+                Node::Continue => continue,
+                Node::Break => break,
+                Node::Print(value) => {
+                    let value = self.calculate(*value).unwrap();
+                    self.print(&value);
+                }
+                _ => return Err(RuntimeError::unexpected_node(node)),
+            }
+        }
+        Ok(Node::Null)
     }
 
     fn print(&self, value: &Value) {
@@ -91,13 +204,59 @@ impl Interpreter {
         }
     }
 
+    fn run_if(
+        &mut self,
+        condition: Node,
+        then_part: Vec<Node>,
+        else_part: Vec<Node>,
+    ) -> Result<Node, RuntimeError> {
+        let condition = self.calculate(condition).unwrap();
+        if condition == Value::True {
+            self.run_if_children(then_part)
+        } else {
+            self.run_if_children(else_part)
+        }
+    }
+
+    fn run_if_children(&mut self, body: Vec<Node>) -> Result<Node, RuntimeError> {
+        let mut body = VecDeque::from(body);
+        while !body.is_empty() {
+            let node = body.pop_front().unwrap();
+            match node {
+                Node::Assignment { name, value } => _ = self.assign_variable(name, *value),
+                Node::Call { .. } => _ = self.call_function(node),
+                Node::If {
+                    condition,
+                    then_part,
+                    else_part,
+                } => {
+                    let node = self.run_if(*condition, then_part, else_part).unwrap();
+                    match node {
+                        Node::Continue | Node::Break => return Ok(node),
+                        Node::Null => (),
+                        _ => return Err(RuntimeError::unexpected_node(node)),
+                    }
+                }
+                Node::Loop { body } => _ = self.run_loop(body),
+                Node::Return(value) => return Ok(Node::Return(value)),
+                Node::Continue => return Ok(Node::Continue),
+                Node::Break => return Ok(Node::Break),
+                Node::Print(value) => {
+                    let value = self.calculate(*value).unwrap();
+                    self.print(&value);
+                }
+                _ => return Err(RuntimeError::unexpected_node(node)),
+            }
+        }
+        Ok(Node::Null)
+    }
     fn assign_variable(&mut self, name: String, value: Node) -> Result<(), RuntimeError> {
         let value = self.calculate(value);
         self.variables.insert(name, value.unwrap());
         Ok(())
     }
 
-    fn calculate(&self, value: Node) -> Result<Value, RuntimeError> {
+    fn calculate(&mut self, value: Node) -> Result<Value, RuntimeError> {
         Ok(match value {
             Node::Number(number) => Value::Number(string_to_number(&number)),
             Node::String(string) => Value::String(string),
@@ -111,37 +270,7 @@ impl Interpreter {
                     return Err(RuntimeError::undefined_variable(value));
                 }
             }
-            Node::Call { ref name, ref args } => {
-                let Some(function) = self.functions.get(name) else {
-                    return Err(RuntimeError::undefined_function(value));
-                };
-
-                let Node::Function {
-                    name: _,
-                    params,
-                    body,
-                } = function.clone()
-                else {
-                    panic!()
-                };
-
-                if params.len() != args.len() {
-                    return Err(RuntimeError::wrong_number_of_arguments(value));
-                }
-
-                let mut variables = self.variables.clone();
-                for (param, arg) in params.iter().zip(args.iter()) {
-                    variables.insert(param.clone(), self.calculate(arg.clone()).unwrap());
-                }
-
-                let mut interpreter = Self {
-                    ast: Ast::new(body),
-                    functions: self.functions.clone(),
-                    variables,
-                };
-
-                interpreter.run_function().unwrap()
-            }
+            Node::Call { .. } => self.call_function(value).unwrap(),
             Node::Or {
                 ref left,
                 ref right,

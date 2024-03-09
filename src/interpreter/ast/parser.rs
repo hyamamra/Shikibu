@@ -121,7 +121,6 @@ fn parse_if(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
         tokens.consume(Lexeme::Dedent).unwrap();
     };
 
-    println!("{:?}", tokens.front());
     tokens.consume(Lexeme::Keyword(Keyword::Then)).unwrap();
     tokens.consume(Lexeme::Newline).unwrap();
     let then_part = parse_block(tokens).unwrap();
