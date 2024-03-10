@@ -5,6 +5,7 @@ pub enum Node {
     List(Vec<Node>),
     Bool(bool),
     Null,
+    Not(Box<Node>),
     Assignment {
         name: String,
         value: Box<Node>,
@@ -86,6 +87,13 @@ pub enum Node {
     Break,
     /// syntax is `つぎへ`
     Continue,
-    /// syntax is `表示` (value)
+    /// syntax is `表示（` (value) `）`
     Print(Box<Node>),
+    /// syntax is `長さ（` (value) `）`
+    Length(Box<Node>),
+    /// syntax is `取得（` (list) `、` (index) `）`
+    Get {
+        list: Box<Node>,
+        index: Box<Node>,
+    },
 }

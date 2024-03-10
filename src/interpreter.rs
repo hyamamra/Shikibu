@@ -483,6 +483,39 @@ impl Interpreter {
                     _ => return Err(RuntimeError::string_addition(value)),
                 }
             }
+            Node::Length(value) => {
+                let target = self.calculate(*value.clone()).unwrap();
+                match target {
+                    Value::String(string) => Value::Number(string.chars().count() as f64),
+                    Value::List(elements) => Value::Number(elements.len() as f64),
+                    _ => return Err(RuntimeError::has_no_length(*value)),
+                }
+            }
+            Node::Get {
+                ref list,
+                ref index,
+            } => {
+                let list = self.calculate(*list.clone()).unwrap();
+                let index = self.calculate(*index.clone()).unwrap();
+                match (list, index) {
+                    (Value::List(elements), Value::Number(index)) => {
+                        let index = index as usize;
+                        if index < elements.len() {
+                            elements[index].clone()
+                        } else {
+                            return Err(RuntimeError::index_out_of_range(value));
+                        }
+                    }
+                    _ => return Err(RuntimeError::unexpected_node(value)),
+                }
+            }
+            Node::Not(value) => {
+                let target = self.calculate(*value.clone()).unwrap();
+                match target {
+                    Value::Bool(b) => Value::Bool(!b),
+                    _ => return Err(RuntimeError::unexpected_node(*value)),
+                }
+            }
             _ => return Err(RuntimeError::unexpected_node(value)),
         })
     }

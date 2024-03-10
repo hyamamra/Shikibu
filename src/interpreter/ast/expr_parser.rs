@@ -109,18 +109,18 @@ fn parse_add_or_sub(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
 }
 
 fn parse_mul_or_div(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
-    let mut node = parse_negate(tokens).unwrap();
+    let mut node = parse_unary(tokens).unwrap();
 
     loop {
         if tokens.consume(Lexeme::Symbol(Symbol::Asterisk)).is_ok() {
             node = Node::Multiply {
                 left: Box::new(node),
-                right: Box::new(parse_negate(tokens).unwrap()),
+                right: Box::new(parse_unary(tokens).unwrap()),
             };
         } else if tokens.consume(Lexeme::Symbol(Symbol::Slash)).is_ok() {
             node = Node::Divide {
                 left: Box::new(node),
-                right: Box::new(parse_negate(tokens).unwrap()),
+                right: Box::new(parse_unary(tokens).unwrap()),
             };
         } else {
             return Ok(node);
@@ -128,12 +128,14 @@ fn parse_mul_or_div(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
     }
 }
 
-fn parse_negate(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
+fn parse_unary(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
     if tokens.consume(Lexeme::Symbol(Symbol::Minus)).is_ok() {
         Ok(Node::Subtract {
             left: Box::new(Node::Number("0".to_string())),
             right: Box::new(parse_primary(tokens).unwrap()),
         })
+    } else if tokens.consume(Lexeme::Symbol(Symbol::Bang)).is_ok() {
+        Ok(Node::Not(Box::new(parse_primary(tokens).unwrap())))
     } else {
         parse_primary(tokens)
     }
@@ -174,6 +176,23 @@ fn parse_terminal(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
         Lexeme::Keyword(Keyword::Null) => Ok(Node::Null),
         Lexeme::Keyword(Keyword::True) => Ok(Node::Bool(true)),
         Lexeme::Keyword(Keyword::False) => Ok(Node::Bool(false)),
+        Lexeme::Keyword(Keyword::Length) => {
+            tokens.consume(Lexeme::Symbol(Symbol::OpenParen)).unwrap();
+            let list = parse_expression(tokens).unwrap();
+            tokens.consume(Lexeme::Symbol(Symbol::CloseParen)).unwrap();
+            Ok(Node::Length(Box::new(list)))
+        }
+        Lexeme::Keyword(Keyword::Get) => {
+            tokens.consume(Lexeme::Symbol(Symbol::OpenParen)).unwrap();
+            let list = parse_expression(tokens).unwrap();
+            tokens.consume(Lexeme::Symbol(Symbol::Comma)).unwrap();
+            let index = parse_expression(tokens).unwrap();
+            tokens.consume(Lexeme::Symbol(Symbol::CloseParen)).unwrap();
+            Ok(Node::Get {
+                list: Box::new(list),
+                index: Box::new(index),
+            })
+        }
         _ => Err(SyntaxError::unexpected_token(token)),
     }
 }

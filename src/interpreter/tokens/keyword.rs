@@ -32,6 +32,10 @@ pub enum Keyword {
     Break,
     /// 表示
     Print,
+    /// 長さ
+    Length,
+    /// 取得
+    Get,
 }
 
 impl FromStr for Keyword {
@@ -54,6 +58,8 @@ impl FromStr for Keyword {
             "つぎへ" => Ok(Keyword::Continue),
             "ぬける" => Ok(Keyword::Break),
             "表示" => Ok(Keyword::Print),
+            "長さ" => Ok(Keyword::Length),
+            "取得" => Ok(Keyword::Get),
             _ => Err(()),
         }
     }
@@ -77,6 +83,8 @@ impl ToString for Keyword {
             Keyword::Continue => "つぎへ",
             Keyword::Break => "ぬける",
             Keyword::Print => "表示",
+            Keyword::Length => "長さ",
+            Keyword::Get => "取得",
         }
         .to_string()
     }

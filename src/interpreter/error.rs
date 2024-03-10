@@ -88,4 +88,18 @@ impl RuntimeError {
             node: Some(node),
         }
     }
+
+    pub fn has_no_length(node: Node) -> Self {
+        Self {
+            message: "Has no length".to_string(),
+            node: Some(node),
+        }
+    }
+
+    pub fn index_out_of_range(node: Node) -> Self {
+        Self {
+            message: "Index out of range".to_string(),
+            node: Some(node),
+        }
+    }
 }

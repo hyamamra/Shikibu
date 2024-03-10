@@ -17,6 +17,7 @@ pub enum Symbol {
     OpenBracket,
     CloseBracket,
     Comma,
+    Bullet,
     Tilde,
 }
 
@@ -40,6 +41,7 @@ impl ToString for Symbol {
             Symbol::OpenBracket => "[",
             Symbol::CloseBracket => "]",
             Symbol::Comma => ",",
+            Symbol::Bullet => ".",
             Symbol::Tilde => "~",
         }
         .to_string()

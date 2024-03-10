@@ -208,6 +208,8 @@ fn parse_break(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
 
 fn parse_print(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
     tokens.consume(Lexeme::Keyword(Keyword::Print)).unwrap();
+    tokens.consume(Lexeme::Symbol(Symbol::OpenParen)).unwrap();
     let value = parse_expression(tokens).unwrap();
+    tokens.consume(Lexeme::Symbol(Symbol::CloseParen)).unwrap();
     Ok(Node::Print(Box::new(value)))
 }
