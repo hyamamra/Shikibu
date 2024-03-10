@@ -55,6 +55,34 @@ fn parse_node(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
     node
 }
 
+fn parse_node_in_block(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
+    let front = tokens.front().unwrap();
+
+    let node = match &front.lexeme {
+        Lexeme::Keyword(keyword) => match keyword {
+            Keyword::If => parse_if(tokens),
+            Keyword::Function => Err(SyntaxError::function_declaration_in_block(front.clone())),
+            Keyword::Return => parse_return(tokens),
+            Keyword::Loop => parse_loop(tokens),
+            Keyword::Continue => parse_continue(tokens),
+            Keyword::Break => parse_break(tokens),
+            Keyword::Print => parse_print(tokens),
+            _ => Err(SyntaxError::unexpected_token(front.clone())),
+        },
+        Lexeme::Identifier(_) => {
+            if is_assignment(tokens) {
+                parse_assignment(tokens)
+            } else {
+                parse_expression(tokens)
+            }
+        }
+        _ => Err(SyntaxError::unexpected_token(front.clone())),
+    };
+
+    tokens.consume(Lexeme::Newline).ok();
+    node
+}
+
 fn is_assignment(tokens: &Tokens) -> bool {
     for i in 0..tokens.len() {
         match tokens.get(i).unwrap().lexeme {
@@ -71,7 +99,7 @@ fn parse_block(tokens: &mut Tokens) -> Result<Vec<Node>, SyntaxError> {
 
     let mut body = Vec::new();
     while tokens.consume(Lexeme::Dedent).is_err() {
-        body.push(parse_node(tokens).unwrap());
+        body.push(parse_node_in_block(tokens).unwrap());
     }
     Ok(body)
 }

@@ -20,6 +20,13 @@ impl SyntaxError {
             token: Some(token),
         }
     }
+
+    pub fn function_declaration_in_block(token: Token) -> Self {
+        Self {
+            message: "Cannot declare function in block".to_string(),
+            token: Some(token),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -60,6 +67,17 @@ impl RuntimeError {
     pub fn undefined_function(node: Node) -> Self {
         Self {
             message: "Undefined function".to_string(),
+            node: Some(node),
+        }
+    }
+
+    pub fn redefining_function(node: Node) -> Self {
+        let name = match &node {
+            Node::Function { name, .. } => name,
+            _ => unreachable!(),
+        };
+        Self {
+            message: format!("Redefining function: {:?}", name),
             node: Some(node),
         }
     }

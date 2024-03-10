@@ -14,6 +14,8 @@ pub enum Symbol {
     GreaterEqual,
     OpenParen,
     CloseParen,
+    OpenBracket,
+    CloseBracket,
     Comma,
     Tilde,
 }
@@ -35,6 +37,8 @@ impl ToString for Symbol {
             Symbol::GreaterEqual => ">=",
             Symbol::OpenParen => "(",
             Symbol::CloseParen => ")",
+            Symbol::OpenBracket => "[",
+            Symbol::CloseBracket => "]",
             Symbol::Comma => ",",
             Symbol::Tilde => "~",
         }

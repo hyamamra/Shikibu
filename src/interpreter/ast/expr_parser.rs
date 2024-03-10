@@ -168,11 +168,25 @@ fn parse_terminal(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
                 Ok(Node::Variable(name))
             }
         }
+        Lexeme::Symbol(Symbol::OpenBracket) => parse_list(tokens),
         Lexeme::Number(number) => Ok(Node::Number(number)),
         Lexeme::String(string) => Ok(Node::String(string)),
         Lexeme::Keyword(Keyword::Null) => Ok(Node::Null),
-        Lexeme::Keyword(Keyword::True) => Ok(Node::True),
-        Lexeme::Keyword(Keyword::False) => Ok(Node::False),
+        Lexeme::Keyword(Keyword::True) => Ok(Node::Bool(true)),
+        Lexeme::Keyword(Keyword::False) => Ok(Node::Bool(false)),
         _ => Err(SyntaxError::unexpected_token(token)),
     }
+}
+
+fn parse_list(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
+    let mut elements = Vec::new();
+    loop {
+        if tokens.consume(Lexeme::Symbol(Symbol::CloseBracket)).is_ok() {
+            break;
+        }
+        if tokens.consume(Lexeme::Symbol(Symbol::Comma)).is_err() {
+            elements.push(parse_expression(tokens).unwrap());
+        }
+    }
+    Ok(Node::List(elements))
 }

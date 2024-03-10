@@ -12,8 +12,8 @@ pub mod tokens;
 enum Value {
     Number(f64),
     String(String),
-    True,
-    False,
+    List(Vec<Value>),
+    Bool(bool),
     Null,
 }
 
@@ -50,7 +50,7 @@ impl Interpreter {
                 Node::Loop { body } => _ = self.run_loop(body),
                 Node::Print(value) => {
                     let value = self.calculate(*value).unwrap();
-                    self.print(&value);
+                    self.println(&value);
                 }
                 _ => return Err(RuntimeError::unexpected_node(node)),
             }
@@ -80,7 +80,7 @@ impl Interpreter {
                 Node::Return(value) => return self.calculate(*value),
                 Node::Print(value) => {
                     let value = self.calculate(*value).unwrap();
-                    self.print(&value);
+                    self.println(&value);
                 }
                 _ => return Err(RuntimeError::unexpected_node(node)),
             }
@@ -149,7 +149,7 @@ impl Interpreter {
                 Node::Break => break,
                 Node::Print(value) => {
                     let value = self.calculate(*value).unwrap();
-                    self.print(&value);
+                    self.println(&value);
                 }
                 _ => return Err(RuntimeError::unexpected_node(node)),
             }
@@ -186,7 +186,7 @@ impl Interpreter {
                 Node::Break => break,
                 Node::Print(value) => {
                     let value = self.calculate(*value).unwrap();
-                    self.print(&value);
+                    self.println(&value);
                 }
                 _ => return Err(RuntimeError::unexpected_node(node)),
             }
@@ -196,12 +196,27 @@ impl Interpreter {
 
     fn print(&self, value: &Value) {
         match value {
-            Value::Number(number) => println!("{}", number),
-            Value::String(string) => println!("{}", string),
-            Value::True => println!("真"),
-            Value::False => println!("偽"),
-            Value::Null => println!("無"),
+            Value::Number(number) => print!("{}", number),
+            Value::String(string) => print!("{}", string),
+            Value::List(elements) => {
+                print!("[");
+                for (i, element) in elements.iter().enumerate() {
+                    if i != 0 {
+                        print!(", ");
+                    }
+                    self.print(element);
+                }
+                print!("]");
+            }
+            Value::Bool(true) => print!("真"),
+            Value::Bool(false) => print!("偽"),
+            Value::Null => print!("無"),
         }
+    }
+
+    fn println(&self, value: &Value) {
+        self.print(value);
+        println!();
     }
 
     fn run_if(
@@ -211,7 +226,7 @@ impl Interpreter {
         else_part: Vec<Node>,
     ) -> Result<Node, RuntimeError> {
         let condition = self.calculate(condition).unwrap();
-        if condition == Value::True {
+        if condition == Value::Bool(true) {
             self.run_if_children(then_part)
         } else {
             self.run_if_children(else_part)
@@ -243,7 +258,7 @@ impl Interpreter {
                 Node::Break => return Ok(Node::Break),
                 Node::Print(value) => {
                     let value = self.calculate(*value).unwrap();
-                    self.print(&value);
+                    self.println(&value);
                 }
                 _ => return Err(RuntimeError::unexpected_node(node)),
             }
@@ -260,8 +275,14 @@ impl Interpreter {
         Ok(match value {
             Node::Number(number) => Value::Number(string_to_number(&number)),
             Node::String(string) => Value::String(string),
-            Node::True => Value::True,
-            Node::False => Value::False,
+            Node::List(elements) => {
+                let elements = elements
+                    .into_iter()
+                    .map(|element| self.calculate(element))
+                    .collect::<Result<Vec<Value>, RuntimeError>>()?;
+                Value::List(elements)
+            }
+            Node::Bool(b) => Value::Bool(b),
             Node::Null => Value::Null,
             Node::Variable(ref variable) => {
                 if let Some(value) = self.variables.get(variable) {
@@ -278,9 +299,9 @@ impl Interpreter {
                 let left = self.calculate(*left.clone()).unwrap();
                 let right = self.calculate(*right.clone()).unwrap();
                 match (left, right) {
-                    (Value::True, _) => Value::True,
-                    (_, Value::True) => Value::True,
-                    _ => Value::False,
+                    (Value::Bool(true), _) => Value::Bool(true),
+                    (_, Value::Bool(true)) => Value::Bool(true),
+                    _ => Value::Bool(false),
                 }
             }
             Node::And {
@@ -290,9 +311,9 @@ impl Interpreter {
                 let left = self.calculate(*left.clone()).unwrap();
                 let right = self.calculate(*right.clone()).unwrap();
                 match (left, right) {
-                    (Value::False, _) => Value::False,
-                    (_, Value::False) => Value::False,
-                    _ => Value::True,
+                    (Value::Bool(false), _) => Value::Bool(false),
+                    (_, Value::Bool(false)) => Value::Bool(false),
+                    _ => Value::Bool(true),
                 }
             }
             Node::Equal {
@@ -304,16 +325,16 @@ impl Interpreter {
                 match (left, right) {
                     (Value::Number(left), Value::Number(right)) => {
                         if left == right {
-                            Value::True
+                            Value::Bool(true)
                         } else {
-                            Value::False
+                            Value::Bool(false)
                         }
                     }
                     (Value::String(left), Value::String(right)) => {
                         if left == right {
-                            Value::True
+                            Value::Bool(true)
                         } else {
-                            Value::False
+                            Value::Bool(false)
                         }
                     }
                     _ => return Err(RuntimeError::comparing_different_types(value)),
@@ -328,16 +349,16 @@ impl Interpreter {
                 match (left, right) {
                     (Value::Number(left), Value::Number(right)) => {
                         if left != right {
-                            Value::True
+                            Value::Bool(true)
                         } else {
-                            Value::False
+                            Value::Bool(false)
                         }
                     }
                     (Value::String(left), Value::String(right)) => {
                         if left != right {
-                            Value::True
+                            Value::Bool(true)
                         } else {
-                            Value::False
+                            Value::Bool(false)
                         }
                     }
                     _ => return Err(RuntimeError::comparing_different_types(value)),
@@ -352,9 +373,9 @@ impl Interpreter {
                 match (left, right) {
                     (Value::Number(left), Value::Number(right)) => {
                         if left < right {
-                            Value::True
+                            Value::Bool(true)
                         } else {
-                            Value::False
+                            Value::Bool(false)
                         }
                     }
                     _ => return Err(RuntimeError::comparing_different_types(value)),
@@ -369,9 +390,9 @@ impl Interpreter {
                 match (left, right) {
                     (Value::Number(left), Value::Number(right)) => {
                         if left <= right {
-                            Value::True
+                            Value::Bool(true)
                         } else {
-                            Value::False
+                            Value::Bool(false)
                         }
                     }
                     _ => return Err(RuntimeError::comparing_different_types(value)),
@@ -386,9 +407,9 @@ impl Interpreter {
                 match (left, right) {
                     (Value::Number(left), Value::Number(right)) => {
                         if left > right {
-                            Value::True
+                            Value::Bool(true)
                         } else {
-                            Value::False
+                            Value::Bool(false)
                         }
                     }
                     _ => return Err(RuntimeError::comparing_different_types(value)),
@@ -403,9 +424,9 @@ impl Interpreter {
                 match (left, right) {
                     (Value::Number(left), Value::Number(right)) => {
                         if left >= right {
-                            Value::True
+                            Value::Bool(true)
                         } else {
-                            Value::False
+                            Value::Bool(false)
                         }
                     }
                     _ => return Err(RuntimeError::comparing_different_types(value)),
@@ -420,6 +441,12 @@ impl Interpreter {
                 match (left, right) {
                     (Value::Number(left), Value::Number(right)) => Value::Number(left + right),
                     (Value::String(left), Value::String(right)) => Value::String(left + &right),
+                    (Value::String(left), Value::Number(right)) => {
+                        Value::String(left + &right.to_string())
+                    }
+                    (Value::Number(left), Value::String(right)) => {
+                        Value::String(left.to_string() + &right)
+                    }
                     _ => return Err(RuntimeError::string_addition(value)),
                 }
             }
@@ -470,6 +497,9 @@ impl Interpreter {
                 body: _,
             } = function
             {
+                if self.functions.contains_key(name) {
+                    return Err(RuntimeError::redefining_function(function));
+                }
                 self.functions.insert(name.clone(), function);
             } else {
                 return Err(RuntimeError::unexpected_node(function));

@@ -2,8 +2,8 @@
 pub enum Node {
     Number(String),
     String(String),
-    True,
-    False,
+    List(Vec<Node>),
+    Bool(bool),
     Null,
     Assignment {
         name: String,
