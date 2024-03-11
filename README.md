@@ -11,7 +11,7 @@
 Pythonは英語のプログラミング言語ですが、構造が近いため、気軽に移行できるようになっているはずです。  
 
 ## Sample - サンプル -
-<img src="./sample/sample.svg" width="400" height="760" alt="css-in-readme">
+<img src="./sample/sample.svg" width="400" height="825" alt="css-in-readme">
 
 ## data type - データ型 -
 - 浮動小数点数
