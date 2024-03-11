@@ -370,7 +370,7 @@ impl Interpreter {
             } => {
                 let left = self.calculate(*left.clone()).unwrap();
                 let right = self.calculate(*right.clone()).unwrap();
-                match (left, right) {
+                match (&left, &right) {
                     (Value::Number(left), Value::Number(right)) => {
                         if left == right {
                             Value::Bool(true)
@@ -385,7 +385,36 @@ impl Interpreter {
                             Value::Bool(false)
                         }
                     }
-                    _ => return Err(RuntimeError::comparing_different_types(value)),
+                    (Value::Bool(left), Value::Bool(right)) => {
+                        if left == right {
+                            Value::Bool(true)
+                        } else {
+                            Value::Bool(false)
+                        }
+                    }
+                    (Value::Null, Value::Null) => Value::Bool(true),
+                    (Value::Array { .. }, Value::Array { .. }) => {
+                        if left == right {
+                            Value::Bool(true)
+                        } else {
+                            Value::Bool(false)
+                        }
+                    }
+                    (Value::Number(n), Value::String(s)) => {
+                        if n.to_string() == *s {
+                            Value::Bool(true)
+                        } else {
+                            Value::Bool(false)
+                        }
+                    }
+                    (Value::String(s), Value::Number(n)) => {
+                        if n.to_string() == *s {
+                            Value::Bool(true)
+                        } else {
+                            Value::Bool(false)
+                        }
+                    }
+                    _ => Value::Bool(false),
                 }
             }
             Node::NotEqual {
@@ -394,7 +423,7 @@ impl Interpreter {
             } => {
                 let left = self.calculate(*left.clone()).unwrap();
                 let right = self.calculate(*right.clone()).unwrap();
-                match (left, right) {
+                match (&left, &right) {
                     (Value::Number(left), Value::Number(right)) => {
                         if left != right {
                             Value::Bool(true)
@@ -409,7 +438,36 @@ impl Interpreter {
                             Value::Bool(false)
                         }
                     }
-                    _ => return Err(RuntimeError::comparing_different_types(value)),
+                    (Value::Bool(left), Value::Bool(right)) => {
+                        if left != right {
+                            Value::Bool(true)
+                        } else {
+                            Value::Bool(false)
+                        }
+                    }
+                    (Value::Null, Value::Null) => Value::Bool(false),
+                    (Value::Array { .. }, Value::Array { .. }) => {
+                        if left != right {
+                            Value::Bool(true)
+                        } else {
+                            Value::Bool(false)
+                        }
+                    }
+                    (Value::Number(n), Value::String(s)) => {
+                        if n.to_string() != *s {
+                            Value::Bool(true)
+                        } else {
+                            Value::Bool(false)
+                        }
+                    }
+                    (Value::String(s), Value::Number(n)) => {
+                        if n.to_string() != *s {
+                            Value::Bool(true)
+                        } else {
+                            Value::Bool(false)
+                        }
+                    }
+                    _ => Value::Bool(true),
                 }
             }
             Node::LessThan {
