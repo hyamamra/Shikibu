@@ -1,4 +1,4 @@
-<svg fill="none" viewBox="0 0 400 820" width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+<svg fill="none" viewBox="0 0 400 760" width="400" height="400" xmlns="http://www.w3.org/2000/svg">
     <foreignObject width="100%" height="100%">
         <div xmlns="http://www.w3.org/1999/xhtml">
             <style>
@@ -81,7 +81,8 @@
 <span class="com">＃　関数定義</span>
 <span class="kw">関数</span>　<span class="fn">否定</span>（<span class="id">真偽値</span>）
 　　<span class="kw">かえす</span>　<span class="id">真偽値</span>＝＝<span class="emb">偽</span>
-<span class="fn">表示</span>（<span class="fn">否定</span>（<span class="emb">真</span>））</code></pre>
+<span class="fn">表示</span>（<span class="fn">否定</span>（<span class="emb">真</span>））
+<span class="com">＃　偽</span></code></pre>
         </div>
     </foreignObject>
 </svg>
