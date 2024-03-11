@@ -74,7 +74,18 @@ impl Interpreter {
                     condition,
                     then_part,
                     else_part,
-                } => _ = self.run_if(*condition, then_part, else_part),
+                } => {
+                    let node = self.run_if(*condition, then_part, else_part).unwrap();
+                    if let Node::Return(value) = node {
+                        return self.calculate(*value);
+                    }
+                    if node == Node::Continue {
+                        continue;
+                    }
+                    if node == Node::Break {
+                        break;
+                    }
+                }
                 Node::Loop { body } => {
                     let node = self.run_loop_inner_function(body).unwrap();
                     match node {
@@ -147,7 +158,7 @@ impl Interpreter {
                 } => {
                     let node = self.run_if(*condition, then_part, else_part).unwrap();
                     if node == Node::Continue {
-                        continue;
+                        cycle = body.iter().cycle();
                     }
                     if node == Node::Break {
                         break;
@@ -186,7 +197,7 @@ impl Interpreter {
                         return Ok(Node::Return(value));
                     }
                     if node == Node::Continue {
-                        continue;
+                        cycle = body.iter().cycle();
                     }
                     if node == Node::Break {
                         break;
