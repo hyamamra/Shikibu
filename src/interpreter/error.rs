@@ -96,10 +96,13 @@ impl RuntimeError {
         }
     }
 
-    pub fn index_out_of_range(node: Node) -> Self {
+    pub fn index_out_of_range(name: &str, index: usize) -> Self {
         Self {
-            message: "Index out of range".to_string(),
-            node: Some(node),
+            message: format!(
+                "配列の範囲外に値を代入しようとしています。配列： {} 添字：{}",
+                name, index
+            ),
+            node: None,
         }
     }
 }

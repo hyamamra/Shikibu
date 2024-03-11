@@ -12,7 +12,7 @@ pub mod tokens;
 enum Value {
     Number(f64),
     String(String),
-    List(Vec<Value>),
+    Array { elements: Vec<Value>, length: usize },
     Bool(bool),
     Null,
 }
@@ -41,6 +41,9 @@ impl Interpreter {
             let node = self.ast.pop_front().unwrap();
             match node {
                 Node::Assignment { name, value } => _ = self.assign_variable(name, *value),
+                Node::IndexAssignment { name, index, value } => {
+                    self.assign_index(name, *index, *value).unwrap();
+                }
                 Node::Call { .. } => _ = self.call_function(node),
                 Node::If {
                     condition,
@@ -63,6 +66,9 @@ impl Interpreter {
             let node = self.ast.pop_front().unwrap();
             match node {
                 Node::Assignment { name, value } => self.assign_variable(name, *value).unwrap(),
+                Node::IndexAssignment { name, index, value } => {
+                    self.assign_index(name, *index, *value).unwrap();
+                }
                 Node::Call { .. } => _ = self.call_function(node),
                 Node::If {
                     condition,
@@ -130,6 +136,9 @@ impl Interpreter {
             let node = cycle.next().unwrap().clone();
             match node {
                 Node::Assignment { name, value } => _ = self.assign_variable(name, *value),
+                Node::IndexAssignment { name, index, value } => {
+                    self.assign_index(name, *index, *value).unwrap();
+                }
                 Node::Call { .. } => _ = self.call_function(node),
                 Node::If {
                     condition,
@@ -163,6 +172,9 @@ impl Interpreter {
             let node = cycle.next().unwrap().clone();
             match node {
                 Node::Assignment { name, value } => _ = self.assign_variable(name, *value),
+                Node::IndexAssignment { name, index, value } => {
+                    self.assign_index(name, *index, *value).unwrap();
+                }
                 Node::Call { .. } => _ = self.call_function(node),
                 Node::If {
                     condition,
@@ -198,13 +210,13 @@ impl Interpreter {
         match value {
             Value::Number(number) => print!("{}", number),
             Value::String(string) => print!("{}", string),
-            Value::List(elements) => {
+            Value::Array { elements, length } => {
                 print!("[");
                 for (i, element) in elements.iter().enumerate() {
-                    if i != 0 {
+                    self.print(element);
+                    if i < *length {
                         print!(", ");
                     }
-                    self.print(element);
                 }
                 print!("]");
             }
@@ -265,9 +277,30 @@ impl Interpreter {
         }
         Ok(Node::Null)
     }
+
     fn assign_variable(&mut self, name: String, value: Node) -> Result<(), RuntimeError> {
         let value = self.calculate(value);
         self.variables.insert(name, value.unwrap());
+        Ok(())
+    }
+
+    fn assign_index(&mut self, name: String, index: Node, value: Node) -> Result<(), RuntimeError> {
+        let index = self.calculate(index).unwrap();
+        let value = self.calculate(value).unwrap();
+        let array = self.variables.get_mut(&name).unwrap();
+        match array {
+            Value::Array { elements, length } => {
+                let index = match index {
+                    Value::Number(index) => index as usize,
+                    _ => panic!(),
+                };
+                if &index > length {
+                    return Err(RuntimeError::index_out_of_range(name.as_str(), index));
+                }
+                elements[index] = value;
+            }
+            _ => return Err(RuntimeError::unexpected_node(Node::Variable(name))),
+        }
         Ok(())
     }
 
@@ -275,12 +308,16 @@ impl Interpreter {
         Ok(match value {
             Node::Number(number) => Value::Number(string_to_number(&number)),
             Node::String(string) => Value::String(string),
-            Node::List(elements) => {
-                let elements = elements
-                    .into_iter()
-                    .map(|element| self.calculate(element))
-                    .collect::<Result<Vec<Value>, RuntimeError>>()?;
-                Value::List(elements)
+            Node::Array(length) => {
+                let len = self.calculate(*length.clone()).unwrap();
+                let len = match len {
+                    Value::Number(len) => len as usize,
+                    _ => return Err(RuntimeError::unexpected_node(*length)),
+                };
+                Value::Array {
+                    elements: vec![Value::Null; len + 1],
+                    length: len,
+                }
             }
             Node::Bool(b) => Value::Bool(b),
             Node::Null => Value::Null,
@@ -487,26 +524,8 @@ impl Interpreter {
                 let target = self.calculate(*value.clone()).unwrap();
                 match target {
                     Value::String(string) => Value::Number(string.chars().count() as f64),
-                    Value::List(elements) => Value::Number(elements.len() as f64),
+                    Value::Array { length, .. } => Value::Number(length as f64),
                     _ => return Err(RuntimeError::has_no_length(*value)),
-                }
-            }
-            Node::Get {
-                ref list,
-                ref index,
-            } => {
-                let list = self.calculate(*list.clone()).unwrap();
-                let index = self.calculate(*index.clone()).unwrap();
-                match (list, index) {
-                    (Value::List(elements), Value::Number(index)) => {
-                        let index = index as usize;
-                        if index < elements.len() {
-                            elements[index].clone()
-                        } else {
-                            return Err(RuntimeError::index_out_of_range(value));
-                        }
-                    }
-                    _ => return Err(RuntimeError::unexpected_node(value)),
                 }
             }
             Node::Not(value) => {

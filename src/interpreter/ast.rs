@@ -19,7 +19,7 @@ impl TryFrom<Tokens> for Ast {
         let parser = Parser::new(tokens);
         let children = parser
             .collect::<Result<VecDeque<Node>, SyntaxError>>()
-            .unwrap();
+            .expect("構文エラー");
         Ok(Self { children })
     }
 }

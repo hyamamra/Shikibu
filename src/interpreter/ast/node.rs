@@ -2,7 +2,7 @@
 pub enum Node {
     Number(String),
     String(String),
-    List(Vec<Node>),
+    Array(Box<Node>),
     Bool(bool),
     Null,
     Not(Box<Node>),
@@ -10,7 +10,18 @@ pub enum Node {
         name: String,
         value: Box<Node>,
     },
+    /// syntax is (name) `「` (index) `」` `＝` (value)
+    IndexAssignment {
+        name: String,
+        index: Box<Node>,
+        value: Box<Node>,
+    },
     Variable(String),
+    /// syntax is (name) `「` (index) `」`
+    Index {
+        name: String,
+        index: Box<Node>,
+    },
     /// syntax is `関数` (name) `（` (args) `）` (body)
     Function {
         name: String,
@@ -91,9 +102,4 @@ pub enum Node {
     Print(Box<Node>),
     /// syntax is `長さ（` (value) `）`
     Length(Box<Node>),
-    /// syntax is `取得（` (list) `、` (index) `）`
-    Get {
-        list: Box<Node>,
-        index: Box<Node>,
-    },
 }

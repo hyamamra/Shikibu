@@ -155,6 +155,7 @@ fn parse_terminal(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
     let token = tokens.shift().unwrap();
     match token.lexeme {
         Lexeme::Identifier(name) => {
+            // Function call
             if tokens.consume(Lexeme::Symbol(Symbol::OpenParen)).is_ok() {
                 let mut args = Vec::new();
                 loop {
@@ -166,46 +167,38 @@ fn parse_terminal(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
                     }
                 }
                 Ok(Node::Call { name, args })
+            // Array index
+            } else if tokens.consume(Lexeme::Symbol(Symbol::OpenBracket)).is_ok() {
+                let index = parse_expression(tokens).unwrap();
+                tokens
+                    .consume(Lexeme::Symbol(Symbol::CloseBracket))
+                    .unwrap();
+                Ok(Node::Index {
+                    name,
+                    index: Box::new(index),
+                })
+            // Variable
             } else {
                 Ok(Node::Variable(name))
             }
         }
-        Lexeme::Symbol(Symbol::OpenBracket) => parse_list(tokens),
         Lexeme::Number(number) => Ok(Node::Number(number)),
         Lexeme::String(string) => Ok(Node::String(string)),
         Lexeme::Keyword(Keyword::Null) => Ok(Node::Null),
         Lexeme::Keyword(Keyword::True) => Ok(Node::Bool(true)),
         Lexeme::Keyword(Keyword::False) => Ok(Node::Bool(false)),
+        Lexeme::Keyword(Keyword::Array) => {
+            tokens.consume(Lexeme::Symbol(Symbol::OpenParen)).unwrap();
+            let length = parse_expression(tokens).unwrap();
+            tokens.consume(Lexeme::Symbol(Symbol::CloseParen)).unwrap();
+            Ok(Node::Array(Box::new(length)))
+        }
         Lexeme::Keyword(Keyword::Length) => {
             tokens.consume(Lexeme::Symbol(Symbol::OpenParen)).unwrap();
             let list = parse_expression(tokens).unwrap();
             tokens.consume(Lexeme::Symbol(Symbol::CloseParen)).unwrap();
             Ok(Node::Length(Box::new(list)))
         }
-        Lexeme::Keyword(Keyword::Get) => {
-            tokens.consume(Lexeme::Symbol(Symbol::OpenParen)).unwrap();
-            let list = parse_expression(tokens).unwrap();
-            tokens.consume(Lexeme::Symbol(Symbol::Comma)).unwrap();
-            let index = parse_expression(tokens).unwrap();
-            tokens.consume(Lexeme::Symbol(Symbol::CloseParen)).unwrap();
-            Ok(Node::Get {
-                list: Box::new(list),
-                index: Box::new(index),
-            })
-        }
         _ => Err(SyntaxError::unexpected_token(token)),
     }
-}
-
-fn parse_list(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
-    let mut elements = Vec::new();
-    loop {
-        if tokens.consume(Lexeme::Symbol(Symbol::CloseBracket)).is_ok() {
-            break;
-        }
-        if tokens.consume(Lexeme::Symbol(Symbol::Comma)).is_err() {
-            elements.push(parse_expression(tokens).unwrap());
-        }
-    }
-    Ok(Node::List(elements))
 }

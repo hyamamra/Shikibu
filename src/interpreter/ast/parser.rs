@@ -107,6 +107,17 @@ fn parse_block(tokens: &mut Tokens) -> Result<Vec<Node>, SyntaxError> {
 pub fn parse_assignment(tokens: &mut Tokens) -> Result<Node, SyntaxError> {
     let front = tokens.shift().unwrap();
     if let Lexeme::Identifier(name) = front.lexeme {
+        // Assign a value to an index of an array.
+        if tokens.consume(Lexeme::Symbol(Symbol::OpenBracket)).is_ok() {
+            let index = Box::new(parse_expression(tokens).unwrap());
+            tokens
+                .consume(Lexeme::Symbol(Symbol::CloseBracket))
+                .unwrap();
+            tokens.consume(Lexeme::Symbol(Symbol::Equal)).unwrap();
+            let value = Box::new(parse_expression(tokens).unwrap());
+            return Ok(Node::IndexAssignment { name, index, value });
+        }
+        // Assign a value to a variable.
         tokens.consume(Lexeme::Symbol(Symbol::Equal)).unwrap();
         let value = Box::new(parse_expression(tokens).unwrap());
         Ok(Node::Assignment { name, value })

@@ -22,7 +22,7 @@ pub enum Keyword {
     Null,
     /// 関数
     Function,
-    /// もどす
+    /// かえす
     Return,
     /// くりかえし
     Loop,
@@ -32,10 +32,10 @@ pub enum Keyword {
     Break,
     /// 表示
     Print,
+    /// 配列
+    Array,
     /// 長さ
     Length,
-    /// 取得
-    Get,
 }
 
 impl FromStr for Keyword {
@@ -53,13 +53,13 @@ impl FromStr for Keyword {
             "偽" => Ok(Keyword::False),
             "無" => Ok(Keyword::Null),
             "関数" => Ok(Keyword::Function),
-            "もどす" => Ok(Keyword::Return),
+            "かえす" => Ok(Keyword::Return),
             "くりかえし" => Ok(Keyword::Loop),
             "つぎへ" => Ok(Keyword::Continue),
             "ぬける" => Ok(Keyword::Break),
             "表示" => Ok(Keyword::Print),
+            "配列" => Ok(Keyword::Array),
             "長さ" => Ok(Keyword::Length),
-            "取得" => Ok(Keyword::Get),
             _ => Err(()),
         }
     }
@@ -78,13 +78,13 @@ impl ToString for Keyword {
             Keyword::False => "偽",
             Keyword::Null => "無",
             Keyword::Function => "関数",
-            Keyword::Return => "もどす",
+            Keyword::Return => "かえす",
             Keyword::Loop => "くりかえし",
             Keyword::Continue => "つぎへ",
             Keyword::Break => "ぬける",
             Keyword::Print => "表示",
+            Keyword::Array => "配列",
             Keyword::Length => "長さ",
-            Keyword::Get => "取得",
         }
         .to_string()
     }
